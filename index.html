@@ -21,7 +21,7 @@ canvas{display:block;position:fixed;top:0;left:0;}
 #hpfill{height:100%;background:linear-gradient(90deg,#ff2020,#ff8800,#90ee40);background-size:300% 100%;transition:width .3s;}
 
 /* 잔탄: 재장전 버튼 바로 위, 세로로 쌓기 */
-#ammorow{position:fixed;bottom:172px;left:16px;display:flex;flex-direction:column-reverse;gap:2px;z-index:10;pointer-events:none;align-items:center;}
+#ammorow{position:fixed;bottom:184px;left:16px;display:flex;flex-direction:column-reverse;gap:2px;z-index:10;pointer-events:none;align-items:center;}
 .atick{width:7px;height:3px;background:#b8ff50;border-radius:2px;}
 .atick.spent{background:rgba(180,255,80,.12);}
 
@@ -45,7 +45,7 @@ canvas{display:block;position:fixed;top:0;left:0;}
 
 /* 원형 재장전 버튼 — 좌하단 */
 #reloadCircle{
-  position:fixed; bottom:96px; left:8px;
+  position:fixed; bottom:108px; left:8px;
   width:72px; height:72px; border-radius:50%;
   background:rgba(8,14,6,.95);
   cursor:pointer; z-index:21; -webkit-tap-highlight-color:transparent;
@@ -154,7 +154,7 @@ canvas{display:block;position:fixed;top:0;left:0;}
 <div id="waveCountdown"><span class="cdLabel">NEXT WAVE IN</span><span class="cdNum" id="cdNum">10</span></div>
 <div id="menu">
   <div class="mTab active" id="tabFire" onclick="setTab('fire')">
-    <div class="ti">🎯</div><div class="tl">FIRE</div>
+    <div class="ti">🎯</div><div class="tl">BATTLE</div>
   </div>
   <div class="mTab" id="tabUpgrade" onclick="setTab('upgrade')">
     <div class="ti">⚙️</div><div class="tl">UPGRADE</div>
@@ -185,7 +185,7 @@ const WEAPON_DEFS = {
   machinegun: {
     icon:'🔫', name:'MACHINE GUN', color:'#ffe566',
     baseDmg:14,   baseRate:200,  baseAmmo:20,  baseReload:900,
-    baseSpeed:480, upgradeCost:40, costMul:1.6,
+    baseSpeed:480, upgradeCost:40, costMul:1.6, critChance:0.08, critMul:1.8,
     desc:'빠른 연사, 짧은 재장전',
     shoot(cx,cy,angle,state){
       // 단발 총알
@@ -203,7 +203,7 @@ const WEAPON_DEFS = {
   bomb: {
     icon:'💣', name:'BOMB LAUNCHER', color:'#ff6600',
     baseDmg:40,  baseRate:900,  baseAmmo:6,   baseReload:2400,
-    baseSpeed:300, upgradeCost:70, costMul:1.8,
+    baseSpeed:300, upgradeCost:70, costMul:1.8, critChance:0.12, critMul:2.0,
     desc:'폭발 범위 피해, 느린 연사',
     shoot(cx,cy,angle,state){
       const s=BULLET_START_R;
@@ -221,7 +221,7 @@ const WEAPON_DEFS = {
   laser: {
     icon:'⚡', name:'LASER CANNON', color:'#00ffff',
     baseDmg:8,   baseRate:80,   baseAmmo:30,  baseReload:2000,
-    baseSpeed:900, upgradeCost:80, costMul:1.9,
+    baseSpeed:900, upgradeCost:80, costMul:1.9, critChance:0.05, critMul:1.5,
     desc:'관통 피해, 모든 적 통과',
     shoot(cx,cy,angle,state){
       const s=BULLET_START_R;
@@ -241,7 +241,7 @@ const WEAPON_DEFS = {
   poison: {
     icon:'🏹', name:'POISON ARROW', color:'#88ff44',
     baseDmg:6,   baseRate:350,  baseAmmo:15,  baseReload:1600,
-    baseSpeed:420, upgradeCost:60, costMul:1.7,
+    baseSpeed:420, upgradeCost:60, costMul:1.7, critChance:0.20, critMul:2.5,
     desc:'독 지속 피해 (3초)',
     shoot(cx,cy,angle,state){
       const s=BULLET_START_R;
@@ -261,7 +261,7 @@ const WEAPON_DEFS = {
   slime: {
     icon:'🫧', name:'SLIME GUN', color:'#aaff00',
     baseDmg:10,  baseRate:500,  baseAmmo:10,  baseReload:2800,
-    baseSpeed:260, upgradeCost:65, costMul:1.75,
+    baseSpeed:260, upgradeCost:65, costMul:1.75, critChance:0.15, critMul:2.2,
     desc:'슬로우 효과 (50%, 2초)',
     shoot(cx,cy,angle,state){
       const s=BULLET_START_R;
@@ -294,48 +294,81 @@ const ENEMY_TYPES={
   specter: {col:'#334433',r:12,label:'SPECTER',  goldDrop:12, pattern:'teleport'},
 };
 
-// ── 10 WAVE 테이블 ────────────────────────────────────────────
-// ── WAVE BALANCE (v3) ──────────────────────────────────────
-// 기준: 기관총 기본 DPS ≈70/s, 탄창20발, 장전0.9s
-// 총HP 예산 = 플레이어가 2~3탄창으로 처리 가능한 수준으로 설계
-// W1-3: 튜토리얼 수준 / W4-6: 중간 / W7-10: 하드
+// ── BIOME 정의 ────────────────────────────────────────────────
+const BIOMES = {
+  jungle: {
+    name:'🌿 JUNGLE', bgBase:'#0d1a08', bgMid:'#1e3010', bgFar:'#162408',
+    gridCol:'rgba(60,110,30,.2)', fogCol:'rgba(0,0,0,.55)',
+    treeHue:100, treeLum:.13,
+    ambientLight:'#334422',
+  },
+  desert: {
+    name:'🏜 DESERT', bgBase:'#1a1208', bgMid:'#2e2010', bgFar:'#1a1208',
+    gridCol:'rgba(180,120,40,.15)', fogCol:'rgba(20,10,0,.5)',
+    treeHue:35, treeLum:.16,
+    ambientLight:'#442200',
+  },
+  arctic: {
+    name:'🧊 ARCTIC', bgBase:'#0a0e18', bgMid:'#101828', bgFar:'#0a0e18',
+    gridCol:'rgba(100,160,220,.18)', fogCol:'rgba(0,10,30,.5)',
+    treeHue:210, treeLum:.22,
+    ambientLight:'#223344',
+  },
+  volcanic: {
+    name:'🌋 VOLCANIC', bgBase:'#120606', bgMid:'#1e0a04', bgFar:'#0e0404',
+    gridCol:'rgba(220,60,20,.2)', fogCol:'rgba(30,0,0,.6)',
+    treeHue:10, treeLum:.10,
+    ambientLight:'#441100',
+  },
+};
+
+// ── WAVE TABLE (v4) — 환경별 테마 적용 ──────────────────────
+// biome: 배경 환경 / hpRestore: 클리어 시 회복 HP
+// 초반은 회복 넉넉히, 후반은 적게 (희소성 밸런스)
 const WAVES=[
-  // W1: 기본 좀비 4마리, 느림 — 장전 없이 클리어 가능
-  {w:1,  squads:[{count:4, type:'basic',  hp:22, speed:40}],
-         spawnMs:900, reward:25},
-  // W2: 기본 6마리 — 1탄창 딱 소모
-  {w:2,  squads:[{count:6, type:'basic',  hp:26, speed:44}],
-         spawnMs:800, reward:35},
-  // W3: 기본+러너 소수 — 2탄창 정도
-  {w:3,  squads:[{count:6, type:'basic',  hp:30, speed:46},{count:2,type:'runner',hp:18,speed:75}],
-         spawnMs:750, reward:45},
-  // W4: 러너 등장, 빠르지만 HP 낮음
-  {w:4,  squads:[{count:5, type:'runner', hp:28, speed:78},{count:4,type:'basic',hp:34,speed:48}],
-         spawnMs:700, reward:55},
-  // W5: 브루트 첫 등장 2마리 + 기본
-  {w:5,  squads:[{count:2, type:'brute',  hp:70, speed:38},{count:6,type:'basic',hp:30,speed:50}],
-         spawnMs:750, reward:70},
-  // W6: 스나이퍼 + 스웜 — 원거리 대응 요구
-  {w:6,  squads:[{count:3, type:'sniper', hp:44, speed:30},{count:7,type:'swarm',hp:16,speed:72}],
-         spawnMs:600, reward:85},
-  // W7: 브루트+러너 혼합
-  {w:7,  squads:[{count:3, type:'brute',  hp:95, speed:40},{count:6,type:'runner',hp:40,speed:82}],
-         spawnMs:620, reward:100},
-  // W8: 보머+스펙터 — 패턴 다양화
-  {w:8,  squads:[{count:4, type:'bomber', hp:60, speed:52},{count:3,type:'specter',hp:70,speed:58},{count:5,type:'swarm',hp:22,speed:85}],
-         spawnMs:550, reward:125},
-  // W9: 스나이퍼+스펙터+러너 혼합
-  {w:9,  squads:[{count:4, type:'sniper', hp:80, speed:36},{count:4,type:'specter',hp:65,speed:62},{count:6,type:'runner',hp:55,speed:88}],
-         spawnMs:480, reward:155},
-  // W10: 파이널 — 자이언트+보머+러너
-  {w:10, squads:[{count:3, type:'giant',  hp:280,speed:35},{count:5,type:'bomber',hp:80,speed:58},{count:6,type:'runner',hp:60,speed:90}],
-         spawnMs:650, reward:240},
+  // ═══ JUNGLE (W1~3) ═══ 기초 단계, 여유 있는 클리어 회복
+  {w:1,  biome:'jungle',
+   squads:[{count:4, type:'basic',  hp:22, speed:40}],
+   spawnMs:900, reward:25, hpRestore:30},
+  {w:2,  biome:'jungle',
+   squads:[{count:6, type:'basic',  hp:26, speed:44}],
+   spawnMs:800, reward:35, hpRestore:25},
+  {w:3,  biome:'jungle',
+   squads:[{count:6, type:'basic',  hp:30, speed:46},{count:2,type:'runner',hp:18,speed:75}],
+   spawnMs:750, reward:45, hpRestore:20},
+
+  // ═══ DESERT (W4~6) ═══ 고온의 사막, 빠른 적 + 원거리 저격
+  {w:4,  biome:'desert',
+   squads:[{count:5, type:'runner', hp:28, speed:78},{count:4,type:'basic',hp:34,speed:48}],
+   spawnMs:700, reward:55, hpRestore:18},
+  {w:5,  biome:'desert',
+   squads:[{count:2, type:'brute',  hp:70, speed:38},{count:6,type:'swarm',hp:16,speed:75}],
+   spawnMs:720, reward:70, hpRestore:15},
+  {w:6,  biome:'desert',
+   squads:[{count:3, type:'sniper', hp:44, speed:30},{count:5,type:'runner',hp:35,speed:82}],
+   spawnMs:620, reward:85, hpRestore:12},
+
+  // ═══ ARCTIC (W7~8) ═══ 설원, 유령 같은 스펙터 + 폭탄
+  {w:7,  biome:'arctic',
+   squads:[{count:3, type:'brute',  hp:95, speed:40},{count:4,type:'specter',hp:60,speed:58},{count:4,type:'runner',hp:40,speed:85}],
+   spawnMs:600, reward:100, hpRestore:10},
+  {w:8,  biome:'arctic',
+   squads:[{count:4, type:'bomber', hp:60, speed:52},{count:3,type:'specter',hp:75,speed:62},{count:5,type:'swarm',hp:22,speed:88}],
+   spawnMs:540, reward:125, hpRestore:8},
+
+  // ═══ VOLCANIC (W9~10) ═══ 화산, 가장 강력한 적들
+  {w:9,  biome:'volcanic',
+   squads:[{count:4, type:'sniper', hp:80, speed:36},{count:4,type:'specter',hp:70,speed:65},{count:5,type:'runner',hp:55,speed:90}],
+   spawnMs:460, reward:155, hpRestore:6},
+  {w:10, biome:'volcanic',
+   squads:[{count:3, type:'giant',  hp:280,speed:35},{count:5,type:'bomber',hp:80,speed:60},{count:6,type:'runner',hp:62,speed:92}],
+   spawnMs:620, reward:240, hpRestore:0},
 ];
 
 // ── 초소 업그레이드 ────────────────────────────────────────────
 const OUTPOST_UPGRADES=[
   {id:'armor', icon:'🛡',name:'장갑 강화',  desc:'최대HP +25',      max:5,baseCost:60,costMul:1.8,apply:()=>{CFG.OUTPOST_HP+=25;hp=Math.min(hp+25,CFG.OUTPOST_HP);updateHUD();}},
-  {id:'regen', icon:'💚',name:'자동 회복',  desc:'웨이브당 HP+10',  max:3,baseCost:80,costMul:2.0,apply:()=>{CFG.regenPerWave+=10;}},
+  {id:'regen', icon:'💚',name:'자동 회복',  desc:'초당 HP+0.5 자동회복',  max:3,baseCost:80,costMul:2.0,apply:()=>{CFG.regenPerSec+=0.5;}},
   {id:'block', icon:'🔰',name:'방어 강화',  desc:'근접 피해 -20%',  max:3,baseCost:70,costMul:1.9,apply:()=>{CFG.meleeDmgMul=Math.max(.2,CFG.meleeDmgMul-.2);}},
 ];
 
@@ -347,7 +380,7 @@ const SKILLS=[
 ];
 
 // ── CFG ──────────────────────────────────────────────────────
-const CFG={OUTPOST_HP:100,regenPerWave:0,meleeDmgMul:1.0};
+const CFG={OUTPOST_HP:100,regenPerSec:0,meleeDmgMul:1.0};
 const OUTPOST_BLOCK_R=52;
 const BULLET_START_R=44;
 
@@ -356,6 +389,7 @@ let W,H,cx,cy,R;
 const canvas=document.getElementById('c'),ctx=canvas.getContext('2d');
 let turretAngle=0,targetAngle=0,outpostRot=0;
 let bullets=[],enemies=[],particles=[],trees=[],floatingTexts=[],enemyBullets=[];
+let currentBiome='jungle';
 let hp=100,kills=0,gold=0;
 let waveIdx=0,enemiesLeft=0,waveActive=false;
 let gameRunning=false,raf,lastTime=0,screenShake=0;
@@ -396,9 +430,11 @@ function resize(){
 }
 function buildTrees(){
   trees=[];
+  const bm=BIOMES[currentBiome]||BIOMES.jungle;
   for(let i=0;i<30;i++){
     const a=(i/30)*Math.PI*2+Math.random()*.35,r=R+20+Math.random()*45;
-    trees.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r,r:7+Math.random()*11,hue:95+Math.random()*40,lum:.12+Math.random()*.1});
+    trees.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r,r:7+Math.random()*11,
+      hue:bm.treeHue+Math.random()*20,lum:bm.treeLum+Math.random()*.08});
   }
 }
 
@@ -485,7 +521,18 @@ function killMsg(type){
   setTimeout(()=>{if(d.parentNode)d.parentNode.removeChild(d);},2600);
 }
 function spawnGoldText(x,y,amt){
-  floatingTexts.push({x,y,vy:-55,life:1.2,maxLife:1.2,text:'+💰'+amt});
+  floatingTexts.push({x,y,vy:-55,life:1.2,maxLife:1.2,text:'+💰'+amt,col:'#ffdd00',size:13});
+}
+function spawnDmgText(x,y,dmg,isCrit){
+  floatingTexts.push({
+    x:x+(Math.random()-.5)*20, y:y-10,
+    vy:-45-(isCrit?30:0),
+    life:isCrit?1.4:0.9, maxLife:isCrit?1.4:0.9,
+    text:(isCrit?'💥':'') + Math.round(dmg),
+    col:isCrit?'#ff4400':'#ffffff',
+    size:isCrit?22:12,
+    isCrit
+  });
 }
 
 // ── MENU TABS ────────────────────────────────────────────────
@@ -696,8 +743,14 @@ function fireBullet(){
   if(!frenzyActive){w.ammo--;updateAmmoBar();}
   // 무기별 발사음
   sfx(currentWeaponId==='machinegun'?'shoot':currentWeaponId==='laser'?'laser':currentWeaponId==='bomb'?'bomb':currentWeaponId==='poison'?'poison':'slime');
+  const isCrit=Math.random()<(d.critChance||0.08);
+  const critMul=d.critMul||1.8;
   const newBullets=d.shoot(cx,cy,turretAngle,w);
-  newBullets.forEach(b=>{b.startLife=b.life;bullets.push(b);});
+  newBullets.forEach(b=>{
+    b.startLife=b.life;
+    if(isCrit){b.dmg=Math.round(b.dmg*critMul);b.isCrit=true;b.r=(b.r||4)+2;}
+    bullets.push(b);
+  });
   spawnMuzzle(cx+Math.cos(turretAngle)*BULLET_START_R,cy+Math.sin(turretAngle)*BULLET_START_R,turretAngle,w.color);
   screenShake=Math.max(screenShake,currentWeaponId==='bomb'?4:2.5);
   if(!frenzyActive&&w.ammo===0)startReload();
@@ -733,8 +786,10 @@ function buildWaveSquads(w){const all=[];for(const sq of w.squads)for(let i=0;i<
 
 function startWave(){
   if(waveIdx>=WAVES.length){winGame();return;}
-  // 웨이브 시작 전 체력 회복
-  if(CFG.regenPerWave>0){hp=Math.min(CFG.OUTPOST_HP,hp+CFG.regenPerWave);updateHUD();}
+  // biome 전환
+  const newBiome=WAVES[waveIdx].biome||'jungle';
+  if(newBiome!==currentBiome){currentBiome=newBiome;buildTrees();}
+
   const w=WAVES[waveIdx];
   const squads=buildWaveSquads(w);
   enemiesLeft=squads.length;waveActive=true;
@@ -748,8 +803,12 @@ function startWave(){
 }
 let countdownTimer=null;
 function onWaveClear(){
-  waveActive=false;const reward=WAVES[waveIdx].reward;
-  gold+=reward;updateHUD();showBanner('WAVE CLEAR! +💰'+reward,'#b8ff50');
+  waveActive=false;const w=WAVES[waveIdx];
+  const reward=w.reward; gold+=reward;
+  const restore=w.hpRestore||0;
+  if(restore>0){hp=Math.min(CFG.OUTPOST_HP,hp+restore);}
+  updateHUD();
+  showBanner('WAVE CLEAR! +💰'+reward+(restore>0?' +❤️'+restore:''),'#b8ff50');
   waveIdx++;
   if(waveIdx>=WAVES.length){setTimeout(winGame,1600);return;}
   // 10초 카운트다운
@@ -776,6 +835,8 @@ function loop(ts){
   raf=requestAnimationFrame(loop);if(!gameRunning)return;
   const dt=Math.min((ts-lastTime)/1000,.05);lastTime=ts;
 
+  // 자동 회복
+  if(CFG.regenPerSec>0&&hp<CFG.OUTPOST_HP){hp=Math.min(CFG.OUTPOST_HP,hp+CFG.regenPerSec*dt);updateHUD();}
   // 무기 재장전
   const w=getCurWeapon();
   if(w.isReloading){
@@ -811,7 +872,9 @@ function loop(ts){
       const e=enemies[j];if(e.dead)continue;
       const ex=b.x-e.x,ey=b.y-e.y;
       if(ex*ex+ey*ey<(e.r+6)*(e.r+6)){
-        sfx('hit');e.hitFlash=.13;
+        sfx('hit');e.hitFlash=b.isCrit?.25:.13;
+        // 크리티컬 파티클
+        if(b.isCrit){spawnParticles(b.x,b.y,'#ff4400',8,130,.4);spawnRing(b.x,b.y,'rgba(255,80,0,.9)',45);screenShake=Math.max(screenShake,4);}
         // 무기별 효과
         if(b.type==='bomb'){
           // 범위 폭발
@@ -825,7 +888,10 @@ function loop(ts){
         }
         if(b.type==='poison'){e.poisoned=true;e.poisonTimer=b.poisonDur;e.poisonDmg=b.poisonDmg;spawnParticles(b.x,b.y,'#88ff44',5,60,.3);}
         if(b.type==='slime'){e.slowed=true;e.slowTimer=b.slowDur;e.slowMul=b.slowMul;spawnRing(b.x,b.y,'rgba(170,255,0,.6)',40);}
-        e.hp-=b.dmg;spawnRing(b.x,b.y,'rgba(255,160,0,.7)');screenShake=Math.max(screenShake,1.8);
+        e.hp-=b.dmg;
+        spawnDmgText(e.x,e.y-e.r,b.dmg,b.isCrit);
+        if(!b.isCrit)spawnRing(b.x,b.y,'rgba(255,160,0,.7)');
+        screenShake=Math.max(screenShake,b.isCrit?3.5:1.8);
         if(e.hp<=0)killEnemy(j);
         if(!b.pierce){bullets.splice(i,1);hitAny=true;break;}
         else hitAny=true; // 레이저: 계속 진행
@@ -932,14 +998,24 @@ function draw(){
   const sx=screenShake>0?(Math.random()-.5)*screenShake*2:0,sy=screenShake>0?(Math.random()-.5)*screenShake*2:0;
   ctx.save();ctx.translate(sx,sy);
 
-  // BG
-  ctx.fillStyle='#0d1a08';ctx.fillRect(-20,-20,W+40,H+40);
+  // BG — biome 기반
+  const bm=BIOMES[currentBiome]||BIOMES.jungle;
+  ctx.fillStyle=bm.bgBase;ctx.fillRect(-20,-20,W+40,H+40);
   const grd=ctx.createRadialGradient(cx,cy,0,cx,cy,R+55);
-  grd.addColorStop(0,'#1e3010');grd.addColorStop(.7,'#162408');grd.addColorStop(1,'#0d1a08');
+  grd.addColorStop(0,bm.bgMid);grd.addColorStop(.7,bm.bgFar);grd.addColorStop(1,bm.bgBase);
   ctx.beginPath();ctx.arc(cx,cy,R+55,0,Math.PI*2);ctx.fillStyle=grd;ctx.fill();
-
+  // biome 특수 오버레이
+  if(currentBiome==='volcanic'){
+    // 용암 균열 느낌
+    ctx.strokeStyle='rgba(255,60,0,.08)';ctx.lineWidth=2;
+    for(let i=0;i<6;i++){const a=(i/6)*Math.PI*2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*(R+50),cy+Math.sin(a)*(R+50));ctx.stroke();}
+  }
+  if(currentBiome==='arctic'){
+    // 눈보라 느낌 점들
+    if(Math.random()<.3){particles.push({x:Math.random()*W,y:0,vx:(Math.random()-.5)*20,vy:30+Math.random()*20,life:.8,maxLife:.8,col:'rgba(200,220,255,.5)',r:1.5});}
+  }
   // Grid
-  ctx.strokeStyle='rgba(60,110,30,.2)';ctx.lineWidth=1;
+  ctx.strokeStyle=bm.gridCol;ctx.lineWidth=1;
   for(let r=R*.3;r<=R+1;r+=R*.3){ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();}
   for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*(R+1),cy+Math.sin(a)*(R+1));ctx.stroke();}
 
@@ -950,7 +1026,8 @@ function draw(){
     ctx.beginPath();ctx.arc(t.x,t.y-t.r*.25,t.r,0,Math.PI*2);ctx.fillStyle=`hsl(${t.hue},52%,${Math.floor(t.lum*100)}%)`;ctx.fill();
     ctx.beginPath();ctx.arc(t.x-t.r*.28,t.y-t.r*.12,t.r*.68,0,Math.PI*2);ctx.fillStyle=`hsl(${t.hue+8},56%,${Math.floor((t.lum+.04)*100)}%)`;ctx.fill();
   }
-  const ev=ctx.createRadialGradient(cx,cy,R-10,cx,cy,R+30);ev.addColorStop(0,'rgba(0,0,0,0)');ev.addColorStop(1,'rgba(0,0,0,.55)');
+  const bm2=BIOMES[currentBiome]||BIOMES.jungle;
+  const ev=ctx.createRadialGradient(cx,cy,R-10,cx,cy,R+30);ev.addColorStop(0,'rgba(0,0,0,0)');ev.addColorStop(1,bm2.fogCol);
   ctx.beginPath();ctx.arc(cx,cy,R+30,0,Math.PI*2);ctx.fillStyle=ev;ctx.fill();
 
   // 적
@@ -1056,10 +1133,18 @@ function draw(){
   for(const b of bullets)wd.drawBullet(ctx,b);
 
   // Floating texts
-  ctx.font='bold 13px Courier New';ctx.textAlign='center';
+  ctx.textAlign='center';
   for(const ft of floatingTexts){
-    const t=ft.life/ft.maxLife;ctx.globalAlpha=t;ctx.fillStyle='#ffdd00';
-    ctx.shadowColor='#ff8800';ctx.shadowBlur=6;ctx.fillText(ft.text,ft.x,ft.y);
+    const t=ft.life/ft.maxLife;
+    ctx.globalAlpha=ft.isCrit?Math.min(1,t*2):t;
+    const sz=ft.size||13;
+    ctx.font=`bold ${sz}px Courier New`;
+    ctx.fillStyle=ft.col||'#ffdd00';
+    ctx.shadowColor=ft.isCrit?'#ff2200':ft.col||'#ff8800';
+    ctx.shadowBlur=ft.isCrit?14:6;
+    if(ft.isCrit){ctx.save();ctx.scale(1+Math.sin(ft.life*20)*.08,1+Math.sin(ft.life*20)*.08);}
+    ctx.fillText(ft.text,ft.x,ft.y+(ft.isCrit?0:0));
+    if(ft.isCrit)ctx.restore();
   }
   ctx.globalAlpha=1;ctx.shadowBlur=0;ctx.textAlign='left';
 
@@ -1101,13 +1186,14 @@ function killEnemy(idx){
 // ── GAME FLOW ────────────────────────────────────────────────
 window.startGame=function(){
   document.getElementById('overlay').style.display='none';
-  CFG.OUTPOST_HP=100;CFG.regenPerWave=0;CFG.meleeDmgMul=1.0;
+  CFG.OUTPOST_HP=100;CFG.regenPerSec=0;CFG.meleeDmgMul=1.0;
   hp=100;kills=0;gold=0;waveIdx=0;enemiesLeft=0;waveActive=false;
   if(countdownTimer)clearInterval(countdownTimer);document.getElementById('waveCountdown').style.display='none';
   bullets=[];enemies=[];particles=[];floatingTexts=[];enemyBullets=[];
   screenShake=0;lastFire=0;frenzyActive=false;shieldActive=false;upgradeLevel={};
   SKILLS.forEach(s=>{s.unlocked=false;s.cdLeft=0;});
   initWeaponStates();currentWeaponId='machinegun';
+  currentBiome='jungle';
   gameRunning=true;lastTime=performance.now();
   updateHUD();buildAmmoBar();updateAmmoBar();buildSkillBar();updateWeaponHud();setTab('fire');
   cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);
@@ -1116,9 +1202,40 @@ window.startGame=function(){
 function gameOver(){
   gameRunning=false;
   showOverlay('OUTPOST LOST','#ff4444',
-    `<div class="sgrid"><div class="sbox"><div class="sl">WAVE</div><div class="sv">${waveIdx+1}</div></div><div class="sbox"><div class="sl">KILLS</div><div class="sv">${kills}</div></div></div>
-    <button class="btn" onclick="startGame()">↺ RETRY</button>`);
+    `<div class="sgrid">
+      <div class="sbox"><div class="sl">WAVE</div><div class="sv">${waveIdx+1}</div></div>
+      <div class="sbox"><div class="sl">KILLS</div><div class="sv">${kills}</div></div>
+    </div>
+    <button class="btn" onclick="continueWithAd()" style="border-color:#ffaa00;color:#ffcc00;margin-bottom:6px">
+      📺 광고 보고 이어하기<br><span style="font-size:9px;letter-spacing:1px;opacity:.7">HP 100% 회복</span>
+    </button>
+    <button class="btn" onclick="startGame()" style="font-size:11px;padding:10px 30px">↺ 처음부터</button>`);
 }
+window.continueWithAd=function(){
+  // [INTEGRATION POINT] 실제 AdMob/광고 SDK 연동 시 이 함수 내부에서 광고 로드/표시
+  // Unity 포팅 시: Advertisement.Show("Rewarded", new ShowOptions{...}) 로 대체
+  const adOverlay=document.createElement('div');
+  adOverlay.style.cssText='position:fixed;inset:0;background:#000;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:Courier New';
+  adOverlay.innerHTML=`
+    <div style="font-size:11px;letter-spacing:2px;color:rgba(255,255,255,.4);margin-bottom:12px">AD</div>
+    <div style="font-size:18px;letter-spacing:3px;color:#ffaa00">📺 ADVERTISEMENT</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:8px">5초 후 이어하기...</div>
+    <div id="adCount" style="font-size:42px;font-weight:bold;color:#ffcc00;margin-top:16px">5</div>`;
+  document.body.appendChild(adOverlay);
+  let t=5;
+  const iv=setInterval(()=>{
+    t--;document.getElementById('adCount').textContent=t;
+    if(t<=0){
+      clearInterval(iv);document.body.removeChild(adOverlay);
+      // 이어하기: HP 100% 회복 후 재개
+      hp=CFG.OUTPOST_HP;updateHUD();
+      document.getElementById('overlay').style.display='none';
+      currentBiome='jungle';
+  gameRunning=true;lastTime=performance.now();
+      cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);
+    }
+  },1000);
+};
 function winGame(){
   gameRunning=false;
   showOverlay('MISSION COMPLETE','#b8ff50',
