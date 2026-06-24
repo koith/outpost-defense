@@ -186,9 +186,9 @@ canvas{display:block;position:fixed;top:0;left:0;}
 const WEAPON_DEFS = {
   machinegun: {
     icon:'🔫', name:'MACHINE GUN', color:'#ffe566',
-    baseDmg:12,   baseRate:240,  baseAmmo:18,  baseReload:1100,
-    baseSpeed:480, upgradeCost:50, costMul:1.8, critChance:0.07, critMul:1.6, unlockCost:0,
-    desc:'빠른 연사, 단일 타겟 특화',
+    baseDmg:10,   baseRate:260,  baseAmmo:16,  baseReload:1400,
+    baseSpeed:480, upgradeCost:35, costMul:1.55, critChance:0.06, critMul:1.5, unlockCost:0,
+    desc:'기본 연사, 단일 타겟 전용',
     shoot(cx,cy,angle,state){
       // 단발 총알
       const s=BULLET_START_R;
@@ -621,7 +621,8 @@ function renderSubContent(){
 function renderWeaponTab(){
   return WEAPON_ORDER.map(id=>{
     const d=WEAPON_DEFS[id],w=weaponState[id];
-    const lv=upgradeLevel['w_'+id]||0,maxLv=5;
+    const maxLv=id==='machinegun'?15:10;
+    const lv=upgradeLevel['w_'+id]||0;
     const maxed=lv>=maxLv;
     const sel=id===currentWeaponId;
     const unlocked=w.unlocked;
@@ -675,24 +676,35 @@ function selectWeapon(id){
 }
 function buyWeaponUpgrade(id){
   const d=WEAPON_DEFS[id],w=weaponState[id];
-  const lv=upgradeLevel['w_'+id]||0;if(lv>=5)return;
+  // 기관총: 맥스 15레벨, 나머지: 맥스 10레벨
+  const maxLvl=id==='machinegun'?15:10;
+  const lv=upgradeLevel['w_'+id]||0;if(lv>=maxLvl)return;
   const cost=Math.round(d.upgradeCost*Math.pow(d.costMul,lv));
   if(gold<cost){showBanner('골드 부족!','#ff4444');return;}
   gold-=cost;upgradeLevel['w_'+id]=lv+1;
   // 각 스탯 강화
-  // 기관총은 성장폭 억제, 다른 무기는 기존 성장률
+  // 기관총: 15레벨 분산, 성장 억제
+  // 다른 무기: 10레벨, 빠른 성장
   const isMG=(id==='machinegun');
-  const dmgGrowth=isMG?.18:.25;
-  const rateGrowth=isMG?.06:.08;
-  const ammoGrowth=isMG?.10:.15;
-  const reloadGrowth=isMG?.09:.12;
   const newLv=lv+1;
-  w.dmg=Math.round(d.baseDmg*(1+newLv*dmgGrowth));
-  w.rate=Math.max(60,Math.round(d.baseRate*(1-(newLv*rateGrowth))));
-  w.maxAmmo=Math.round(d.baseAmmo*(1+newLv*ammoGrowth));
-  w.ammo=Math.min(w.ammo+2,w.maxAmmo);
-  w.reload=Math.max(400,Math.round(d.baseReload*(1-(newLv*reloadGrowth))));
-  w.speed=Math.round(d.baseSpeed*(1+newLv*.07));
+  if(isMG){
+    // 15레벨 걸쳐 완만하게 성장
+    // Lv15 최종: DMG≈22, Rate≈170ms, Ammo≈26, Reload≈750ms
+    w.dmg=Math.round(d.baseDmg + newLv*0.8);
+    w.rate=Math.max(170,Math.round(d.baseRate - newLv*6));
+    w.maxAmmo=Math.round(d.baseAmmo + newLv*0.7);
+    w.ammo=Math.min(w.ammo+1,w.maxAmmo);
+    w.reload=Math.max(750,Math.round(d.baseReload - newLv*44));
+    w.speed=Math.round(d.baseSpeed*(1+newLv*.04));
+  } else {
+    // 다른 무기: 10레벨 내에서 확실한 성장
+    w.dmg=Math.round(d.baseDmg*(1+newLv*.22));
+    w.rate=Math.max(60,Math.round(d.baseRate*(1-(newLv*.07))));
+    w.maxAmmo=Math.round(d.baseAmmo*(1+newLv*.12));
+    w.ammo=Math.min(w.ammo+2,w.maxAmmo);
+    w.reload=Math.max(350,Math.round(d.baseReload*(1-(newLv*.09))));
+    w.speed=Math.round(d.baseSpeed*(1+newLv*.07));
+  }
   updateHUD();buildAmmoBar();updateAmmoBar();updateWeaponHud();renderUpgradePanel();
   showBanner(d.name+' 업그레이드!','#b8ff50');
 }
@@ -1343,8 +1355,6 @@ function draw(){
   }
   ctx.fillStyle='#2e2e2e';ctx.fillRect(3,-7,6,4);
   ctx.beginPath();ctx.arc(0,0,4,0,Math.PI*2);ctx.fillStyle='#2e2e2e';ctx.fill();
-  ctx.beginPath();ctx.arc(0,0,2.2,0,Math.PI*2);
-  ctx.fillStyle=wc;ctx.shadowColor=wc;ctx.shadowBlur=5;ctx.fill();ctx.shadowBlur=0;
   ctx.restore();
   if(shieldActive){ctx.beginPath();ctx.arc(0,0,40,0,Math.PI*2);ctx.strokeStyle=`rgba(68,136,255,${.5+Math.sin(Date.now()*.01)*.3})`;ctx.lineWidth=4;ctx.stroke();}
   ctx.restore();
@@ -1389,6 +1399,24 @@ function draw(){
       ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(turretAngle)*R*.88,cy+Math.sin(turretAngle)*R*.88);
       ctx.stroke();ctx.setLineDash([]);
     }
+  }
+
+  // ── 환경 파티클 렌더링 (전체 화면, 최상단 레이어) ──
+  for(const p of envParticles){
+    const t=Math.max(0,p.life/p.maxLife);
+    ctx.globalAlpha=t;
+    ctx.fillStyle=p.col;
+    if(p.type==='snow'){
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
+      if(p.r>1.8){
+        ctx.strokeStyle=p.col;ctx.lineWidth=0.6;
+        ctx.beginPath();ctx.moveTo(p.x-p.r*1.2,p.y);ctx.lineTo(p.x+p.r*1.2,p.y);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(p.x,p.y-p.r*1.2);ctx.lineTo(p.x,p.y+p.r*1.2);ctx.stroke();
+      }
+    } else {
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
+    }
+    ctx.globalAlpha=1;
   }
 
   ctx.restore();
