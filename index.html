@@ -192,21 +192,15 @@
   <button class="btn" onclick="startGame()">▶ START MISSION</button>
 </div>
 
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js"
-  }
-}
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-<script type="module">
+<script>
 // ═══════════════════════════════════════════════════════════
 //  OUTPOST: LAST STAND  —  Three.js r128 · Topview Mobile
 //  ASSET SWAP POINTS:  search "// [ASSET]" to find all
 //  placeholder geometry / color / sound replacements
 // ═══════════════════════════════════════════════════════════
-import * as THREE from 'three';
+// THREE is now global via CDN script tag
 
 // ── CONFIG (tweak here to balance) ──────────────────────────
 const CFG = {
