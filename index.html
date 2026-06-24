@@ -185,7 +185,7 @@ const WEAPON_DEFS = {
   machinegun: {
     icon:'🔫', name:'MACHINE GUN', color:'#ffe566',
     baseDmg:14,   baseRate:200,  baseAmmo:20,  baseReload:900,
-    baseSpeed:480, upgradeCost:40, costMul:1.6, critChance:0.08, critMul:1.8,
+    baseSpeed:480, upgradeCost:40, costMul:1.6, critChance:0.08, critMul:1.8, unlockCost:0,
     desc:'빠른 연사, 짧은 재장전',
     shoot(cx,cy,angle,state){
       // 단발 총알
@@ -203,7 +203,7 @@ const WEAPON_DEFS = {
   bomb: {
     icon:'💣', name:'BOMB LAUNCHER', color:'#ff6600',
     baseDmg:40,  baseRate:900,  baseAmmo:6,   baseReload:2400,
-    baseSpeed:300, upgradeCost:70, costMul:1.8, critChance:0.12, critMul:2.0,
+    baseSpeed:300, upgradeCost:70, costMul:1.8, critChance:0.12, critMul:2.0, unlockCost:60,
     desc:'폭발 범위 피해, 느린 연사',
     shoot(cx,cy,angle,state){
       const s=BULLET_START_R;
@@ -221,7 +221,7 @@ const WEAPON_DEFS = {
   laser: {
     icon:'⚡', name:'LASER CANNON', color:'#00ffff',
     baseDmg:8,   baseRate:80,   baseAmmo:30,  baseReload:2000,
-    baseSpeed:900, upgradeCost:80, costMul:1.9, critChance:0.05, critMul:1.5,
+    baseSpeed:900, upgradeCost:80, costMul:1.9, critChance:0.05, critMul:1.5, unlockCost:80,
     desc:'관통 피해, 모든 적 통과',
     shoot(cx,cy,angle,state){
       const s=BULLET_START_R;
@@ -241,7 +241,7 @@ const WEAPON_DEFS = {
   poison: {
     icon:'🏹', name:'POISON ARROW', color:'#88ff44',
     baseDmg:6,   baseRate:350,  baseAmmo:15,  baseReload:1600,
-    baseSpeed:420, upgradeCost:60, costMul:1.7, critChance:0.20, critMul:2.5,
+    baseSpeed:420, upgradeCost:60, costMul:1.7, critChance:0.20, critMul:2.5, unlockCost:50,
     desc:'독 지속 피해 (3초)',
     shoot(cx,cy,angle,state){
       const s=BULLET_START_R;
@@ -261,7 +261,7 @@ const WEAPON_DEFS = {
   slime: {
     icon:'🫧', name:'SLIME GUN', color:'#aaff00',
     baseDmg:10,  baseRate:500,  baseAmmo:10,  baseReload:2800,
-    baseSpeed:260, upgradeCost:65, costMul:1.75, critChance:0.15, critMul:2.2,
+    baseSpeed:260, upgradeCost:65, costMul:1.75, critChance:0.15, critMul:2.2, unlockCost:70,
     desc:'슬로우 효과 (50%, 2초)',
     shoot(cx,cy,angle,state){
       const s=BULLET_START_R;
@@ -292,6 +292,7 @@ const ENEMY_TYPES={
   swarm:   {col:'#2a4a22',r:8, label:'SWARM',    goldDrop:2,  pattern:'swarm'},
   giant:   {col:'#2a1a0a',r:28,label:'GIANT',    goldDrop:25, pattern:'straight'},
   specter: {col:'#334433',r:12,label:'SPECTER',  goldDrop:12, pattern:'teleport'},
+  boss:    {col:'#880000',r:35,label:'⚠ BOSS',    goldDrop:80, pattern:'boss'},
 };
 
 // ── BIOME 정의 ────────────────────────────────────────────────
@@ -334,8 +335,8 @@ const WAVES=[
    squads:[{count:6, type:'basic',  hp:26, speed:44}],
    spawnMs:800, reward:35, hpRestore:25},
   {w:3,  biome:'jungle',
-   squads:[{count:6, type:'basic',  hp:30, speed:46},{count:2,type:'runner',hp:18,speed:75}],
-   spawnMs:750, reward:45, hpRestore:20},
+   squads:[{count:6, type:'basic',  hp:30, speed:46},{count:2,type:'runner',hp:18,speed:75},{count:1,type:'boss',hp:300,speed:32}],
+   spawnMs:750, reward:60, hpRestore:20, hasBoss:true},
 
   // ═══ DESERT (W4~6) ═══ 고온의 사막, 빠른 적 + 원거리 저격
   {w:4,  biome:'desert',
@@ -345,8 +346,8 @@ const WAVES=[
    squads:[{count:2, type:'brute',  hp:70, speed:38},{count:6,type:'swarm',hp:16,speed:75}],
    spawnMs:720, reward:70, hpRestore:15},
   {w:6,  biome:'desert',
-   squads:[{count:3, type:'sniper', hp:44, speed:30},{count:5,type:'runner',hp:35,speed:82}],
-   spawnMs:620, reward:85, hpRestore:12},
+   squads:[{count:3, type:'sniper', hp:44, speed:30},{count:5,type:'runner',hp:35,speed:82},{count:1,type:'boss',hp:500,speed:28}],
+   spawnMs:620, reward:110, hpRestore:12, hasBoss:true},
 
   // ═══ ARCTIC (W7~8) ═══ 설원, 유령 같은 스펙터 + 폭탄
   {w:7,  biome:'arctic',
@@ -358,8 +359,8 @@ const WAVES=[
 
   // ═══ VOLCANIC (W9~10) ═══ 화산, 가장 강력한 적들
   {w:9,  biome:'volcanic',
-   squads:[{count:4, type:'sniper', hp:80, speed:36},{count:4,type:'specter',hp:70,speed:65},{count:5,type:'runner',hp:55,speed:90}],
-   spawnMs:460, reward:155, hpRestore:6},
+   squads:[{count:4, type:'sniper', hp:80, speed:36},{count:4,type:'specter',hp:70,speed:65},{count:5,type:'runner',hp:55,speed:90},{count:1,type:'boss',hp:900,speed:25}],
+   spawnMs:460, reward:200, hpRestore:6, hasBoss:true},
   {w:10, biome:'volcanic',
    squads:[{count:3, type:'giant',  hp:280,speed:35},{count:5,type:'bomber',hp:80,speed:60},{count:6,type:'runner',hp:62,speed:92}],
    spawnMs:620, reward:240, hpRestore:0},
@@ -392,7 +393,7 @@ let bullets=[],enemies=[],particles=[],trees=[],floatingTexts=[],enemyBullets=[]
 let currentBiome='jungle';
 let hp=100,kills=0,gold=0;
 let waveIdx=0,enemiesLeft=0,waveActive=false;
-let gameRunning=false,raf,lastTime=0,screenShake=0;
+let gameRunning=false,isPaused=false,raf,lastTime=0,screenShake=0;
 let upgradeLevel={};
 let shieldActive=false,shieldTimer=0,frenzyActive=false,frenzyTimer=0;
 let currentTab='fire',currentUpgradeSubTab='weapon';
@@ -416,9 +417,11 @@ function initWeaponStates(){
       dmg:d.baseDmg, rate:d.baseRate, speed:d.baseSpeed,
       reload:d.baseReload, color:d.color,
       isReloading:false, reloadTimer:0,
+      unlocked: d.unlockCost===0,  // 기관총만 기본 해금
     };
   });
 }
+function isWeaponUnlocked(id){ return weaponState[id]?.unlocked||false; }
 
 function getCurWeapon(){return weaponState[currentWeaponId];}
 function getCurDef(){return WEAPON_DEFS[currentWeaponId];}
@@ -542,7 +545,17 @@ function setTab(tab){
     document.getElementById('tab'+t[0].toUpperCase()+t.slice(1)).classList.toggle('active',t===tab);
   });
   const panel=document.getElementById('panel');
-  if(tab==='fire'){panel.style.display='none';return;}
+  const rc=document.getElementById('reloadCircle');
+  if(tab==='fire'){
+    panel.style.display='none';
+    if(rc)rc.style.display='flex';
+    isPaused=false;
+    // 루프 재개 시 시간 리셋 (튀는 dt 방지)
+    lastTime=performance.now();
+    return;
+  }
+  isPaused=true;
+  if(rc)rc.style.display='none'; // 패널 열릴 때 재장전버튼 숨김
   panel.style.display='block';
   if(tab==='upgrade')renderUpgradePanel();
   else renderSkillPanel();
@@ -566,16 +579,29 @@ function renderWeaponTab(){
     const d=WEAPON_DEFS[id],w=weaponState[id];
     const lv=upgradeLevel['w_'+id]||0,maxLv=5;
     const maxed=lv>=maxLv;
-    const cost=Math.round(d.upgradeCost*Math.pow(d.costMul,lv));
     const sel=id===currentWeaponId;
-    return `<div class="weaponCard${sel?' selected':''}" onclick="selectWeapon('${id}')">
+    const unlocked=w.unlocked;
+    if(!unlocked){
+      return `<div class="weaponCard" style="opacity:.65" onclick="doWeaponCardClick('${id}')">
+        <div class="wicon" style="filter:grayscale(1)">🔒</div>
+        <div class="winfo">
+          <div class="wname" style="color:rgba(255,255,255,.4)">${d.name} <span style="color:#ffaa00;font-size:9px">LOCKED</span></div>
+          <div class="wdesc">${d.desc}</div>
+          <div class="wstats" style="color:rgba(255,255,255,.3)">해금 후 사용 가능</div>
+        </div>
+        <div class="wlevel" style="color:#ffaa00">🔓💰${d.unlockCost}</div>
+      </div>`;
+    }
+    const upgCost=Math.round(d.upgradeCost*Math.pow(d.costMul,lv));
+    return `<div class="weaponCard${sel?' selected':''}" onclick="doWeaponCardClick('${id}')">
       <div class="wicon">${d.icon}</div>
       <div class="winfo">
         <div class="wname">${d.name}${sel?' ◀':''}</div>
         <div class="wdesc">${d.desc}</div>
         <div class="wstats">DMG:${Math.round(w.dmg)} | RATE:${Math.round(1000/w.rate)}/s | 탄:${w.maxAmmo} | 장전:${(w.reload/1000).toFixed(1)}s</div>
+        <div class="ulevel">${'█'.repeat(lv)}${'░'.repeat(maxLv-lv)} Lv${lv}/${maxLv}</div>
       </div>
-      <div class="wlevel">${maxed?'MAX Lv':'Lv'+lv+' 💰'+cost}</div>
+      <div class="wlevel">${maxed?'MAX':sel?'⬆️💰'+upgCost:'장착'}</div>
     </div>`;
   }).join('');
 }
@@ -633,10 +659,29 @@ function buySkill(idx){
   gold-=sk.cost;sk.unlocked=true;updateHUD();buildSkillBar();renderSkillPanel();
   showBanner(sk.name+' 습득!','#4488ff');
 }
-// 무기 카드 클릭: 장착 or 업그레이드 (더블탭 대신 하단 업그레이드 버튼)
-window.selectWeapon=function(id){
-  if(id===currentWeaponId){buyWeaponUpgrade(id);}
-  else{selectWeapon(id);}
+// 무기 카드 클릭 핸들러
+window.doWeaponCardClick=function(id){
+  const w=weaponState[id];
+  if(!w)return;
+  if(!w.unlocked){
+    // 해금
+    const d=WEAPON_DEFS[id];
+    if(gold<d.unlockCost){showBanner('골드 부족!','#ff4444');return;}
+    gold-=d.unlockCost; w.unlocked=true; updateHUD();
+    currentWeaponId=id; buildAmmoBar(); updateAmmoBar(); updateWeaponHud();
+    renderUpgradePanel();
+    showBanner(d.name+' 해금! 장착됨','#ffaa00');
+    return;
+  }
+  if(id===currentWeaponId){
+    // 업그레이드
+    buyWeaponUpgrade(id);
+  } else {
+    // 장착
+    currentWeaponId=id; buildAmmoBar(); updateAmmoBar(); updateWeaponHud();
+    renderUpgradePanel();
+    showBanner(WEAPON_DEFS[id].name+' 장착','#b8ff50');
+  }
 };
 
 // ── 스킬 효과 ────────────────────────────────────────────────
@@ -784,16 +829,43 @@ function spawnEnemy(squad){
 }
 function buildWaveSquads(w){const all=[];for(const sq of w.squads)for(let i=0;i<sq.count;i++)all.push(sq);return all;}
 
+let biomeTransitioning=false;
 function startWave(){
   if(waveIdx>=WAVES.length){winGame();return;}
-  // biome 전환
   const newBiome=WAVES[waveIdx].biome||'jungle';
-  if(newBiome!==currentBiome){currentBiome=newBiome;buildTrees();}
+  const isBossWave=WAVES[waveIdx].hasBoss;
+  if(newBiome!==currentBiome){
+    // 씬 전환 연출
+    biomeTransitioning=true;
+    const bm=BIOMES[newBiome];
+    const tr=document.createElement('div');
+    tr.id='biomeTransition';
+    tr.style.cssText=`position:fixed;inset:0;background:#000;z-index:150;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:'Courier New',monospace;opacity:0;transition:opacity .4s`;
+    tr.innerHTML=`<div style="font-size:32px;margin-bottom:12px">${bm.name.split(' ')[0]}</div>
+      <div style="font-size:20px;letter-spacing:4px;color:#b8ff50">${bm.name.replace(/^\S+\s/,'')}</div>
+      <div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.4);margin-top:10px">ENTERING NEW REGION</div>`;
+    document.body.appendChild(tr);
+    setTimeout(()=>tr.style.opacity='1',10);
+    setTimeout(()=>{
+      currentBiome=newBiome;buildTrees();
+      tr.style.opacity='0';
+      setTimeout(()=>{document.body.removeChild(tr);biomeTransitioning=false;actuallyStartWave(isBossWave);},400);
+    },1800);
+    return;
+  }
+  currentBiome=newBiome;
+  actuallyStartWave(isBossWave);
+}
+function actuallyStartWave(isBossWave){
 
   const w=WAVES[waveIdx];
   const squads=buildWaveSquads(w);
   enemiesLeft=squads.length;waveActive=true;
-  showBanner('WAVE '+w.w+(w.w===10?' ⚠ FINAL':''),'#ff9900');
+  if(isBossWave){
+    showBanner('⚠ BOSS WAVE '+w.w,'#ff2200');
+  } else {
+    showBanner('WAVE '+w.w+(w.w===10?' ⚠ FINAL':''),'#ff9900');
+  }
   let spawned=0;
   const iv=setInterval(()=>{
     if(!gameRunning){clearInterval(iv);return;}
@@ -832,7 +904,7 @@ function onWaveClear(){
 
 // ── MAIN LOOP ────────────────────────────────────────────────
 function loop(ts){
-  raf=requestAnimationFrame(loop);if(!gameRunning)return;
+  raf=requestAnimationFrame(loop);if(!gameRunning||isPaused)return;
   const dt=Math.min((ts-lastTime)/1000,.05);lastTime=ts;
 
   // 자동 회복
@@ -964,6 +1036,58 @@ function loop(ts){
       else{e.attackTimer+=dt;if(e.attackTimer>=.7){e.attackTimer=0;if(!shieldActive){hp=Math.max(0,hp-4*CFG.meleeDmgMul);updateHUD();if(hp<=0){gameOver();return;}}}
         const push=minDist-dist+1;e.x-=Math.cos(e.angle)*push;e.y-=Math.sin(e.angle)*push;}
     }
+    else if(e.pattern==='boss'){
+      // 보스: 나선형 접근 + 3초마다 광역 돌진 + 주기적 탄막
+      const bossMinDist=OUTPOST_BLOCK_R+e.r;
+      e.bossTimer=(e.bossTimer||0)+dt;
+      e.bossPhase=e.bossPhase||'approach';
+      e.bossChargeTimer=(e.bossChargeTimer||3)-dt;
+      // 탄막 타이머
+      e.bossBulletTimer=(e.bossBulletTimer||2)-dt;
+      if(e.bossBulletTimer<=0){
+        e.bossBulletTimer=2.5;
+        // 8방향 탄막
+        for(let bi=0;bi<8;bi++){
+          const ba=(bi/8)*Math.PI*2;
+          enemyBullets.push({x:e.x,y:e.y,vx:Math.cos(ba)*180,vy:Math.sin(ba)*180,life:2.5,dmg:15,col:'#ff2200'});
+        }
+        spawnParticles(e.x,e.y,'#ff4400',12,100,.5);
+        sfx('boom');
+      }
+      if(e.bossChargeTimer<=0){
+        // 돌진
+        e.bossChargeTimer=5+Math.random()*2;
+        e.bossPhase='charge';
+        e.chargeAngle=e.angle;
+        e.chargeTimer=.4;
+        showBanner('⚠ BOSS CHARGE!','#ff2200');
+        screenShake=6;
+      }
+      if(e.bossPhase==='charge'){
+        e.chargeTimer-=dt;
+        e.x+=Math.cos(e.chargeAngle)*e.speed*4*dt;
+        e.y+=Math.sin(e.chargeAngle)*e.speed*4*dt;
+        if(e.chargeTimer<=0)e.bossPhase='approach';
+      } else {
+        // 나선형 접근
+        e.bossTimer+=dt*.5;
+        const spiral=Math.sin(e.bossTimer)*40;
+        const toC=e.angle;
+        const perpA=toC+Math.PI/2;
+        if(dist>bossMinDist){
+          e.x+=(Math.cos(toC)*e.speed+Math.cos(perpA)*spiral*.04)*dt;
+          e.y+=(Math.sin(toC)*e.speed+Math.sin(perpA)*spiral*.04)*dt;
+        }
+      }
+      if(dist<=bossMinDist+5){
+        e.attackTimer+=dt;
+        if(e.attackTimer>=0.6){
+          e.attackTimer=0;
+          if(!shieldActive){hp=Math.max(0,hp-20*CFG.meleeDmgMul);updateHUD();screenShake=8;if(hp<=0){gameOver();return false;}}
+        }
+        const push=bossMinDist-dist+1;e.x-=Math.cos(e.angle)*push;e.y-=Math.sin(e.angle)*push;
+      }
+    }
     else if(e.pattern==='teleport'){
       e.teleTimer-=dt;
       if(e.teleTimer<=0){e.teleTimer=3+Math.random()*2;const na=Math.random()*Math.PI*2,nr=R*.3+Math.random()*R*.45;
@@ -1044,6 +1168,22 @@ function draw(){
     else if(e.type==='brute'){ctx.fillStyle=fl?'#ff8866':ec;ctx.fillRect(-e.r*.72,-e.r*.85,e.r*1.44,e.r*1.6);ctx.strokeStyle='#2a1a0a';ctx.lineWidth=1.5;ctx.strokeRect(-e.r*.72,-e.r*.85,e.r*1.44,e.r*1.6);}
     else if(e.type==='sniper'){ctx.fillStyle=fl?'#88aaff':ec;ctx.beginPath();ctx.ellipse(0,0,e.r*.6,e.r*.85,0,0,Math.PI*2);ctx.fill();}
     else if(e.type==='specter'){ctx.globalAlpha=.72;ctx.fillStyle=fl?'#aaffaa':ec;poly(6,e.r*.9,Math.PI/6);ctx.fill();ctx.globalAlpha=1;}
+    else if(e.type==='boss'){
+      // 보스: 큰 6각형 + 회전 링
+      ctx.save();ctx.rotate(e.bossTimer||0);
+      ctx.fillStyle=fl?'#ff8866':'#660000';poly(6,e.r*.9);ctx.fill();
+      ctx.strokeStyle='#ff2200';ctx.lineWidth=3;ctx.stroke();
+      // 내부 크로스
+      ctx.strokeStyle=fl?'#ff8888':'#880000';ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(-e.r*.6,0);ctx.lineTo(e.r*.6,0);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(0,-e.r*.6);ctx.lineTo(0,e.r*.6);ctx.stroke();
+      ctx.restore();
+      // 회전 외곽 링
+      ctx.save();ctx.rotate(-(e.bossTimer||0)*1.5);
+      ctx.strokeStyle='rgba(255,50,0,.6)';ctx.lineWidth=2;ctx.setLineDash([8,6]);
+      ctx.beginPath();ctx.arc(0,0,e.r*1.15,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+      ctx.restore();
+    }
     else{ctx.fillStyle=fl?'#ff7766':ec;ctx.beginPath();ctx.ellipse(0,0,e.r*.68,e.r*.88,0,0,Math.PI*2);ctx.fill();}
     ctx.fillStyle=fl?'#ffbbaa':'#3a5020';ctx.beginPath();ctx.arc(0,-e.r*.75,e.r*.44,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#ff2200';ctx.beginPath();ctx.arc(-e.r*.15,-e.r*.8,2.4,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(e.r*.15,-e.r*.8,2.4,0,Math.PI*2);ctx.fill();
@@ -1193,8 +1333,8 @@ window.startGame=function(){
   screenShake=0;lastFire=0;frenzyActive=false;shieldActive=false;upgradeLevel={};
   SKILLS.forEach(s=>{s.unlocked=false;s.cdLeft=0;});
   initWeaponStates();currentWeaponId='machinegun';
-  currentBiome='jungle';
-  gameRunning=true;lastTime=performance.now();
+  currentBiome='jungle';biomeTransitioning=false;
+  gameRunning=true;isPaused=false;lastTime=performance.now();
   updateHUD();buildAmmoBar();updateAmmoBar();buildSkillBar();updateWeaponHud();setTab('fire');
   cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);
   setTimeout(startWave,800);
@@ -1230,8 +1370,8 @@ window.continueWithAd=function(){
       // 이어하기: HP 100% 회복 후 재개
       hp=CFG.OUTPOST_HP;updateHUD();
       document.getElementById('overlay').style.display='none';
-      currentBiome='jungle';
-  gameRunning=true;lastTime=performance.now();
+      currentBiome='jungle';biomeTransitioning=false;
+  gameRunning=true;isPaused=false;lastTime=performance.now();
       cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);
     }
   },1000);
