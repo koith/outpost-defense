@@ -906,8 +906,14 @@ function showOverlay(title, color, body) {
 }
 
 // ── BOOTSTRAP ─────────────────────────────────────────────────
-init();
-renderer.render(scene, camera); // preview render before game starts
+window.addEventListener('load', function() {
+  if (typeof THREE === 'undefined') {
+    document.body.innerHTML = '<div style="color:#fff;padding:40px;font-family:monospace">Three.js 로드 실패.<br>새로고침 해주세요.</div>';
+    return;
+  }
+  init();
+  if (renderer && scene && camera) renderer.render(scene, camera);
+});
 </script>
 </body>
 </html>
