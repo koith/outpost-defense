@@ -1327,7 +1327,8 @@ function draw(){
   ctx.restore();
   ctx.strokeStyle='#252525';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(15,-4);ctx.lineTo(15,-40);ctx.stroke();
   ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(10,-32);ctx.lineTo(20,-32);ctx.stroke();ctx.beginPath();ctx.moveTo(11,-26);ctx.lineTo(19,-26);ctx.stroke();
-  ctx.beginPath();ctx.arc(15,-42,5,0,Math.PI*2);ctx.fillStyle='#1a1a1a';ctx.shadowColor='#ff4400';ctx.shadowBlur=10;ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle='#444';ctx.lineWidth=1;ctx.stroke();
+  // 안테나 끝 작은 사각 마운트만 표시 (orb 제거)
+  ctx.fillStyle='#333';ctx.fillRect(12,-43,6,4);
   ctx.translate(0,-12);
   ctx.beginPath();ctx.arc(0,0,10,0,Math.PI*2);ctx.fillStyle='#252525';ctx.fill();ctx.strokeStyle='#444';ctx.lineWidth=1.5;ctx.stroke();
   ctx.save();ctx.rotate(turretAngle);
@@ -1366,16 +1367,33 @@ function draw(){
   // Floating texts
   ctx.textAlign='center';
   for(const ft of floatingTexts){
-    const t=ft.life/ft.maxLife;
-    ctx.globalAlpha=ft.isCrit?Math.min(1,t*2):t;
-    const sz=ft.size||13;
-    ctx.font=`bold ${sz}px Courier New`;
-    ctx.fillStyle=ft.col||'#ffdd00';
-    ctx.shadowColor=ft.isCrit?'#ff2200':ft.col||'#ff8800';
-    ctx.shadowBlur=ft.isCrit?14:6;
-    if(ft.isCrit){ctx.save();ctx.scale(1+Math.sin(ft.life*20)*.08,1+Math.sin(ft.life*20)*.08);}
-    ctx.fillText(ft.text,ft.x,ft.y+(ft.isCrit?0:0));
-    if(ft.isCrit)ctx.restore();
+    const t=ft.life/ft.maxLife; // 1→0
+    const elapsed=1-t;           // 0→1 (경과 비율)
+    if(ft.isCrit){
+      // 크리티컬: 등장 시 큰 사이즈로 팡 하고 나타났다가 서서히 작아지며 위로 사라짐
+      // 알파: 처음엔 바로 불투명, 후반 40%부터 페이드
+      const alpha=t>0.4?1:t/0.4;
+      ctx.globalAlpha=alpha;
+      // 크기: 등장 순간 1.4배 → 빠르게 1.0배로 수렴 (bounce 없음)
+      const scaleFactor=1+Math.max(0,0.4-elapsed)*1.0; // 등장 직후만 크게
+      const sz=(ft.size||22)*scaleFactor;
+      ctx.font=`bold ${Math.round(sz)}px Courier New`;
+      ctx.fillStyle=ft.col||'#ff4400';
+      ctx.shadowColor='#ff2200';
+      ctx.shadowBlur=Math.round(16*alpha);
+      ctx.fillText(ft.text,ft.x,ft.y);
+      ctx.shadowBlur=0;
+    } else {
+      // 일반 데미지/골드: 단순 페이드아웃
+      ctx.globalAlpha=t;
+      const sz=ft.size||13;
+      ctx.font=`bold ${sz}px Courier New`;
+      ctx.fillStyle=ft.col||'#ffdd00';
+      ctx.shadowColor=ft.col||'#ff8800';
+      ctx.shadowBlur=5;
+      ctx.fillText(ft.text,ft.x,ft.y);
+      ctx.shadowBlur=0;
+    }
   }
   ctx.globalAlpha=1;ctx.shadowBlur=0;ctx.textAlign='left';
 
