@@ -58,11 +58,17 @@ canvas{display:block;position:fixed;top:0;left:0;}
 /* 웨이브 카운트다운 */
 #waveCountdown{
   position:fixed; top:58px; left:50%; transform:translateX(-50%);
-  background:rgba(0,0,0,.8); border:1px solid rgba(255,150,0,.5);
-  border-radius:8px; padding:5px 16px;
-  color:#ffaa00; font-size:12px; letter-spacing:2px;
+  background:rgba(0,0,0,.85); border:1px solid rgba(255,150,0,.5);
+  border-radius:10px; padding:8px 22px 10px;
   z-index:15; pointer-events:none; display:none; text-align:center;
-  white-space:nowrap;
+  white-space:nowrap; min-width:160px;
+}
+#waveCountdown .cdLabel{
+  color:rgba(255,170,0,.7); font-size:10px; letter-spacing:3px; display:block;
+}
+#waveCountdown .cdNum{
+  color:#ffaa00; font-size:48px; font-weight:bold; line-height:1;
+  text-shadow:0 0 20px rgba(255,150,0,.7); display:block; margin-top:2px;
 }
 
 /* 패널 */
@@ -145,7 +151,7 @@ canvas{display:block;position:fixed;top:0;left:0;}
   <div class="rIcon" id="rcIcon">🔫</div>
   <div class="rName" id="rcName">MACHINE GUN</div>
 </div>
-<div id="waveCountdown"></div>
+<div id="waveCountdown"><span class="cdLabel">NEXT WAVE IN</span><span class="cdNum" id="cdNum">10</span></div>
 <div id="menu">
   <div class="mTab active" id="tabFire" onclick="setTab('fire')">
     <div class="ti">🎯</div><div class="tl">FIRE</div>
@@ -289,17 +295,41 @@ const ENEMY_TYPES={
 };
 
 // ── 10 WAVE 테이블 ────────────────────────────────────────────
+// ── WAVE BALANCE (v3) ──────────────────────────────────────
+// 기준: 기관총 기본 DPS ≈70/s, 탄창20발, 장전0.9s
+// 총HP 예산 = 플레이어가 2~3탄창으로 처리 가능한 수준으로 설계
+// W1-3: 튜토리얼 수준 / W4-6: 중간 / W7-10: 하드
 const WAVES=[
-  {w:1, squads:[{count:6, type:'basic',  hp:28, speed:48}],                                                               spawnMs:700,reward:30},
-  {w:2, squads:[{count:8, type:'basic',  hp:32, speed:52},{count:3,type:'runner',hp:22,speed:88}],                        spawnMs:600,reward:45},
-  {w:3, squads:[{count:6, type:'runner', hp:38, speed:85},{count:4,type:'basic', hp:40,speed:50}],                        spawnMs:520,reward:55},
-  {w:4, squads:[{count:5, type:'brute',  hp:80, speed:44},{count:6,type:'runner',hp:35,speed:90}],                        spawnMs:580,reward:70},
-  {w:5, squads:[{count:4, type:'sniper', hp:50, speed:35},{count:8,type:'swarm', hp:18,speed:80}],                        spawnMs:480,reward:85},
-  {w:6, squads:[{count:5, type:'bomber', hp:65, speed:58},{count:6,type:'brute', hp:95,speed:42}],                        spawnMs:550,reward:100},
-  {w:7, squads:[{count:10,type:'swarm',  hp:25, speed:88},{count:4,type:'sniper',hp:65,speed:38},{count:3,type:'runner',hp:55,speed:95}], spawnMs:380,reward:120},
-  {w:8, squads:[{count:4, type:'specter',hp:85, speed:65},{count:5,type:'brute', hp:120,speed:46},{count:4,type:'bomber',hp:75,speed:62}],spawnMs:500,reward:140},
-  {w:9, squads:[{count:6, type:'sniper', hp:90, speed:40},{count:8,type:'specter',hp:75,speed:68},{count:6,type:'swarm',hp:30,speed:95}], spawnMs:340,reward:170},
-  {w:10,squads:[{count:5, type:'giant',  hp:320,speed:38},{count:6,type:'bomber',hp:90,speed:65},{count:8,type:'runner',hp:70,speed:98}], spawnMs:600,reward:250},
+  // W1: 기본 좀비 4마리, 느림 — 장전 없이 클리어 가능
+  {w:1,  squads:[{count:4, type:'basic',  hp:22, speed:40}],
+         spawnMs:900, reward:25},
+  // W2: 기본 6마리 — 1탄창 딱 소모
+  {w:2,  squads:[{count:6, type:'basic',  hp:26, speed:44}],
+         spawnMs:800, reward:35},
+  // W3: 기본+러너 소수 — 2탄창 정도
+  {w:3,  squads:[{count:6, type:'basic',  hp:30, speed:46},{count:2,type:'runner',hp:18,speed:75}],
+         spawnMs:750, reward:45},
+  // W4: 러너 등장, 빠르지만 HP 낮음
+  {w:4,  squads:[{count:5, type:'runner', hp:28, speed:78},{count:4,type:'basic',hp:34,speed:48}],
+         spawnMs:700, reward:55},
+  // W5: 브루트 첫 등장 2마리 + 기본
+  {w:5,  squads:[{count:2, type:'brute',  hp:70, speed:38},{count:6,type:'basic',hp:30,speed:50}],
+         spawnMs:750, reward:70},
+  // W6: 스나이퍼 + 스웜 — 원거리 대응 요구
+  {w:6,  squads:[{count:3, type:'sniper', hp:44, speed:30},{count:7,type:'swarm',hp:16,speed:72}],
+         spawnMs:600, reward:85},
+  // W7: 브루트+러너 혼합
+  {w:7,  squads:[{count:3, type:'brute',  hp:95, speed:40},{count:6,type:'runner',hp:40,speed:82}],
+         spawnMs:620, reward:100},
+  // W8: 보머+스펙터 — 패턴 다양화
+  {w:8,  squads:[{count:4, type:'bomber', hp:60, speed:52},{count:3,type:'specter',hp:70,speed:58},{count:5,type:'swarm',hp:22,speed:85}],
+         spawnMs:550, reward:125},
+  // W9: 스나이퍼+스펙터+러너 혼합
+  {w:9,  squads:[{count:4, type:'sniper', hp:80, speed:36},{count:4,type:'specter',hp:65,speed:62},{count:6,type:'runner',hp:55,speed:88}],
+         spawnMs:480, reward:155},
+  // W10: 파이널 — 자이언트+보머+러너
+  {w:10, squads:[{count:3, type:'giant',  hp:280,speed:35},{count:5,type:'bomber',hp:80,speed:58},{count:6,type:'runner',hp:60,speed:90}],
+         spawnMs:650, reward:240},
 ];
 
 // ── 초소 업그레이드 ────────────────────────────────────────────
@@ -592,7 +622,18 @@ function sfx(type){
     else if(type==='slime'){o.type='sine';o.frequency.setValueAtTime(180,t);o.frequency.exponentialRampToValueAtTime(80,t+.15);g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.001,t+.18);o.start(t);o.stop(t+.20);}
     else if(type==='hit'){o.type='square';o.frequency.setValueAtTime(130,t);g.gain.setValueAtTime(.2,t);g.gain.exponentialRampToValueAtTime(.001,t+.12);o.start(t);o.stop(t+.14);}
     else if(type==='die'){o.type='sawtooth';o.frequency.setValueAtTime(160,t);o.frequency.exponentialRampToValueAtTime(32,t+.35);g.gain.setValueAtTime(.26,t);g.gain.exponentialRampToValueAtTime(.001,t+.38);o.start(t);o.stop(t+.40);}
-    else if(type==='reload'){o.type='sine';o.frequency.setValueAtTime(480,t);o.frequency.exponentialRampToValueAtTime(820,t+.18);g.gain.setValueAtTime(.1,t);g.gain.exponentialRampToValueAtTime(.001,t+.20);o.start(t);o.stop(t+.22);}
+    else if(type==='reload'){
+      // 철컥1
+      const o2=audioCtx.createOscillator(),g2=audioCtx.createGain();
+      o2.connect(g2);g2.connect(audioCtx.destination);
+      o2.type='square';o2.frequency.setValueAtTime(180,t);o2.frequency.exponentialRampToValueAtTime(60,t+.06);
+      g2.gain.setValueAtTime(.3,t);g2.gain.exponentialRampToValueAtTime(.001,t+.08);
+      o2.start(t);o2.stop(t+.09);
+      // 철컥2 (딜레이)
+      o.type='square';o.frequency.setValueAtTime(220,t+.18);o.frequency.exponentialRampToValueAtTime(70,t+.24);
+      g.gain.setValueAtTime(0,t);g.gain.setValueAtTime(.28,t+.18);g.gain.exponentialRampToValueAtTime(.001,t+.26);
+      o.start(t+.18);o.stop(t+.28);
+    }
     else if(type==='boom'){o.type='sawtooth';o.frequency.setValueAtTime(80,t);o.frequency.exponentialRampToValueAtTime(18,t+.5);g.gain.setValueAtTime(.4,t);g.gain.exponentialRampToValueAtTime(.001,t+.55);o.start(t);o.stop(t+.6);}
     else if(type==='snipe'){o.type='sawtooth';o.frequency.setValueAtTime(400,t);o.frequency.exponentialRampToValueAtTime(60,t+.2);g.gain.setValueAtTime(.25,t);g.gain.exponentialRampToValueAtTime(.001,t+.22);o.start(t);o.stop(t+.24);}
   }catch(e){}
@@ -714,8 +755,9 @@ function onWaveClear(){
   // 10초 카운트다운
   let remaining=10;
   const cdEl=document.getElementById('waveCountdown');
+  const cdNum=document.getElementById('cdNum');
   cdEl.style.display='block';
-  cdEl.textContent='NEXT WAVE IN  '+remaining+'s';
+  cdNum.textContent=remaining;
   clearInterval(countdownTimer);
   countdownTimer=setInterval(()=>{
     remaining--;
@@ -724,7 +766,7 @@ function onWaveClear(){
       cdEl.style.display='none';
       startWave();
     } else {
-      cdEl.textContent='NEXT WAVE IN  '+remaining+'s';
+      cdNum.textContent=remaining;
     }
   },1000);
 }
