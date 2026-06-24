@@ -11,49 +11,49 @@
 body { background:#000; overflow:hidden; width:100vw; height:100vh; font-family:'Courier New',monospace; touch-action:none; user-select:none; }
 canvas { display:block; position:fixed; top:0; left:0; }
 
-/* ── HUD top ── */
-#hud { position:fixed; top:0; left:0; right:0; z-index:10; pointer-events:none;
-  display:flex; justify-content:space-between; padding:10px 12px; }
-.hp { background:rgba(0,0,0,.8); border:1px solid rgba(100,200,60,.45);
-  border-radius:6px; padding:5px 10px; color:#90ee40; font-size:10px; letter-spacing:1px; }
-.hp span { font-size:17px; font-weight:bold; color:#b8ff50; display:block; }
+#hud {
+  position:fixed; top:0; left:0; right:0; z-index:10; pointer-events:none;
+  display:flex; justify-content:space-between; align-items:flex-start; padding:10px 12px; gap:6px;
+}
+.hp {
+  background:rgba(0,0,0,.82); border:1px solid rgba(100,200,60,.4);
+  border-radius:6px; padding:5px 10px; color:#90ee40; font-size:10px; letter-spacing:1px;
+  flex:1; text-align:center; min-width:0;
+}
+.hp span { font-size:16px; font-weight:bold; color:#b8ff50; display:block; white-space:nowrap; }
 
-/* ── HP bar ── */
-#hpbar { position:fixed; bottom:88px; left:0; right:0; height:4px; background:#111; z-index:10; pointer-events:none; }
+#hpbar { position:fixed; bottom:92px; left:0; right:0; height:4px; background:#111; z-index:10; pointer-events:none; }
 #hpfill { height:100%; background:linear-gradient(90deg,#ff2020,#ff8800,#90ee40); background-size:300% 100%; transition:width .3s; }
 
-/* ── Ammo bar ── */
-#ammorow { position:fixed; bottom:94px; right:12px; display:flex; gap:2px; z-index:10; pointer-events:none; }
-.atick { width:3px; height:14px; background:#b8ff50; border-radius:2px; }
+#ammorow { position:fixed; bottom:98px; right:12px; display:flex; gap:2px; z-index:10; pointer-events:none; flex-wrap:wrap; max-width:120px; justify-content:flex-end; }
+.atick { width:3px; height:13px; background:#b8ff50; border-radius:2px; }
 .atick.spent { background:rgba(180,255,80,.12); }
 
-/* ── Bottom menu ── */
+#skillBar { position:fixed; bottom:98px; left:12px; z-index:10; pointer-events:none; display:flex; gap:6px; }
+.skillSlot { width:34px; height:34px; border-radius:6px; background:rgba(0,0,0,.75); border:1px solid rgba(100,200,60,.35);
+  display:flex; align-items:center; justify-content:center; font-size:16px; position:relative; cursor:pointer; pointer-events:all; }
+.skillSlot .cd { position:absolute; inset:0; background:rgba(0,0,0,.75); border-radius:5px;
+  display:flex; align-items:center; justify-content:center; color:#fff; font-size:9px; }
+
 #menu {
   position:fixed; bottom:0; left:0; right:0; height:88px;
-  background:rgba(8,12,6,.96); border-top:1px solid rgba(100,200,60,.25);
+  background:rgba(8,12,6,.97); border-top:1px solid rgba(100,200,60,.25);
   z-index:20; display:flex; align-items:center; padding:0 10px; gap:8px;
 }
 .mTab {
-  flex:1; height:68px; border-radius:6px;
-  background:rgba(0,0,0,.5); border:1px solid rgba(100,200,60,.2);
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  cursor:pointer; transition:all .15s; position:relative;
+  flex:1; height:68px; border-radius:6px; background:rgba(0,0,0,.5);
+  border:1px solid rgba(100,200,60,.2); display:flex; flex-direction:column;
+  align-items:center; justify-content:center; cursor:pointer; transition:all .15s;
   -webkit-tap-highlight-color:transparent;
 }
 .mTab.active { border-color:rgba(100,200,60,.7); background:rgba(100,200,60,.08); }
-.mTab .ti { font-size:17px; }
+.mTab .ti { font-size:18px; }
 .mTab .tl { color:#90ee40; font-size:8px; letter-spacing:1px; margin-top:2px; }
-.mTab .badge {
-  position:absolute; top:4px; right:6px;
-  background:#ff4400; color:#fff; font-size:8px;
-  border-radius:8px; padding:1px 4px; font-weight:bold;
-}
 
-/* ── Upgrade panel ── */
 #panel {
   position:fixed; bottom:88px; left:0; right:0;
   background:rgba(6,10,4,.97); border-top:1px solid rgba(100,200,60,.25);
-  z-index:19; padding:12px; display:none; max-height:55vh; overflow-y:auto;
+  z-index:19; padding:12px; display:none; max-height:52vh; overflow-y:auto;
 }
 #panel h3 { color:#b8ff50; font-size:11px; letter-spacing:3px; margin-bottom:10px; }
 .upgradeRow {
@@ -71,37 +71,28 @@ canvas { display:block; position:fixed; top:0; left:0; }
 .upgradeRow .ulevel { color:rgba(100,200,60,.6); font-size:9px; margin-top:2px; }
 .upgradeRow .cost { color:#ffcc00; font-size:11px; font-weight:bold; flex-shrink:0; }
 
-/* ── Wave announce / banner ── */
 #banner { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
-  font-size:24px; font-weight:bold; letter-spacing:4px; color:#fff;
+  font-size:22px; font-weight:bold; letter-spacing:4px; color:#fff;
   text-shadow:0 0 20px #ff6600; opacity:0; pointer-events:none; z-index:30;
   transition:opacity .3s; text-align:center; white-space:nowrap; }
 
-/* ── Kill feed ── */
-#killfeed { position:fixed; top:68px; left:12px; z-index:10; pointer-events:none; }
+#killfeed { position:fixed; top:72px; left:12px; z-index:10; pointer-events:none; }
 .km { background:rgba(0,0,0,.7); border-left:2px solid #ff4444;
   color:rgba(255,200,80,.9); font-size:9px; letter-spacing:1px;
   padding:2px 8px; border-radius:0 4px 4px 0; margin-bottom:3px;
   animation:fk 2.5s forwards; }
 @keyframes fk { 0%{opacity:1} 80%{opacity:1} 100%{opacity:0} }
 
-/* ── Gold HUD ── */
-#goldHud { position:fixed; top:10px; left:50%; transform:translateX(-50%);
-  z-index:11; pointer-events:none; display:none;
-  background:rgba(0,0,0,.8); border:1px solid rgba(255,200,0,.4);
-  border-radius:6px; padding:4px 10px; color:#ffcc00; font-size:11px; letter-spacing:1px; }
-
-/* ── Overlays ── */
 #overlay {
   position:fixed; inset:0; background:rgba(0,0,0,.92);
   display:flex; flex-direction:column; align-items:center; justify-content:center;
   z-index:100; color:#fff;
 }
 #overlay h1 { font-size:32px; letter-spacing:6px; color:#b8ff50; text-shadow:0 0 30px #90ee40; margin-bottom:6px; }
-.sub { color:rgba(255,255,255,.3); font-size:10px; letter-spacing:3px; margin-bottom:30px; }
+.sub { color:rgba(255,255,255,.3); font-size:10px; letter-spacing:3px; margin-bottom:28px; }
 .btn { background:transparent; border:1px solid #90ee40; color:#b8ff50;
   font-family:inherit; font-size:13px; letter-spacing:3px;
-  padding:14px 40px; cursor:pointer; margin:5px; border-radius:4px; }
+  padding:14px 38px; cursor:pointer; margin:5px; border-radius:4px; }
 .btn:active { background:rgba(144,238,64,.15); }
 .sgrid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; width:240px; }
 .sbox { background:rgba(144,238,64,.06); border:1px solid rgba(144,238,64,.2);
@@ -109,16 +100,9 @@ canvas { display:block; position:fixed; top:0; left:0; }
 .sbox .sl { color:rgba(255,255,255,.3); font-size:9px; letter-spacing:2px; }
 .sbox .sv { color:#b8ff50; font-size:20px; font-weight:bold; }
 
-/* ── Skill indicator ── */
-#skillBar { position:fixed; bottom:94px; left:12px; z-index:10; pointer-events:none;
-  display:flex; gap:6px; }
-.skillSlot { width:32px; height:32px; border-radius:6px;
-  background:rgba(0,0,0,.7); border:1px solid rgba(100,200,60,.3);
-  display:flex; align-items:center; justify-content:center; font-size:16px;
-  position:relative; }
-.skillSlot .cd { position:absolute; inset:0; background:rgba(0,0,0,.7);
-  border-radius:5px; display:flex; align-items:center; justify-content:center;
-  color:#fff; font-size:9px; }
+/* 터치 컨트롤 힌트 */
+#touchHint { position:fixed; bottom:100px; left:50%; transform:translateX(-50%);
+  color:rgba(255,255,255,.2); font-size:9px; letter-spacing:2px; pointer-events:none; z-index:10; }
 </style>
 </head>
 <body>
@@ -126,17 +110,18 @@ canvas { display:block; position:fixed; top:0; left:0; }
 
 <div id="hud">
   <div class="hp"><span id="wn">1</span>WAVE</div>
-  <div class="hp" style="text-align:center"><span id="hn">100</span>HP</div>
-  <div class="hp" style="text-align:right"><span id="kn">0</span>KILLS</div>
+  <div class="hp"><span id="hn">100</span>HP</div>
+  <div class="hp"><span id="gn">0</span>💰GOLD</div>
+  <div class="hp"><span id="kn">0</span>KILLS</div>
 </div>
-<div id="goldHud">💰 <span id="goldVal">0</span></div>
+
 <div id="hpbar"><div id="hpfill" style="width:100%"></div></div>
 <div id="ammorow"></div>
 <div id="skillBar"></div>
 <div id="banner"></div>
 <div id="killfeed"></div>
+<div id="touchHint">← 좌우 터치로 포탑 회전 →</div>
 
-<!-- Bottom menu -->
 <div id="menu">
   <div class="mTab active" id="tabFire" onclick="setTab('fire')">
     <div class="ti">🎯</div><div class="tl">FIRE</div>
@@ -149,417 +134,340 @@ canvas { display:block; position:fixed; top:0; left:0; }
   </div>
 </div>
 
-<!-- Upgrade / Skill panel -->
 <div id="panel"></div>
 
-<!-- Start overlay -->
 <div id="overlay">
   <h1>OUTPOST</h1>
   <div class="sub">LAST STAND · 최후의 초소</div>
   <div style="color:rgba(255,255,255,.4);font-size:11px;text-align:center;margin-bottom:26px;line-height:2;letter-spacing:1px">
-    터치/드래그 → 포탑 조준 & 연사<br>웨이브를 막아 골드를 모으고 초소를 강화하라
+    좌우 터치 위치로 포탑 360° 조준<br>웨이브를 막고 골드로 초소를 강화하라
   </div>
   <button class="btn" onclick="startGame()">▶ START MISSION</button>
 </div>
 
 <script>
 // ════════════════════════════════════════════════════════════
-//  OUTPOST: LAST STAND  v3  —  Canvas 2D · Safari 완벽호환
+//  OUTPOST: LAST STAND  v5
 // ════════════════════════════════════════════════════════════
 
-// ── 10 WAVE BALANCE TABLE ────────────────────────────────────
-// count: 적 수 | hp: 적 체력 | speed: 이동속도(px/s)
-// type: basic/runner/brute/giant | spawnInterval: ms
-// reward: 웨이브 클리어 골드
-const WAVES = [
-  { w:1,  count:6,  hp:28,  speed:48,  type:'basic',  spawnMs:700,  reward:30  },
-  { w:2,  count:9,  hp:32,  speed:55,  type:'basic',  spawnMs:600,  reward:40  },
-  { w:3,  count:8,  hp:40,  speed:80,  type:'runner', spawnMs:550,  reward:50  },
-  { w:4,  count:12, hp:38,  speed:60,  type:'basic',  spawnMs:500,  reward:60  },
-  { w:5,  count:10, hp:70,  speed:72,  type:'runner', spawnMs:480,  reward:80  },
-  { w:6,  count:8,  hp:110, speed:50,  type:'brute',  spawnMs:600,  reward:100 },
-  { w:7,  count:16, hp:55,  speed:78,  type:'runner', spawnMs:380,  reward:110 },
-  { w:8,  count:10, hp:140, speed:48,  type:'brute',  spawnMs:550,  reward:130 },
-  { w:9,  count:20, hp:70,  speed:85,  type:'runner', spawnMs:300,  reward:160 },
-  { w:10, count:8,  hp:300, speed:42,  type:'giant',  spawnMs:900,  reward:200 },
-];
-
-// ── UPGRADE DEFINITIONS ──────────────────────────────────────
-const UPGRADES = [
-  { id:'dmg',     icon:'💥', name:'화력 강화',   desc:'탄약 피해량 +6',        max:5, baseCost:40,  costMul:1.6,
-    apply: ()=>{ CFG.BULLET_DMG += 6; } },
-  { id:'rate',    icon:'⚡', name:'발사속도',    desc:'연사속도 +15%',         max:5, baseCost:50,  costMul:1.7,
-    apply: ()=>{ CFG.FIRE_RATE_MS = Math.max(60, CFG.FIRE_RATE_MS * 0.85); } },
-  { id:'ammo',    icon:'🔋', name:'탄창 확장',   desc:'탄약 +5발',             max:4, baseCost:35,  costMul:1.5,
-    apply: ()=>{ CFG.MAX_AMMO += 5; buildAmmoBar(); } },
-  { id:'reload',  icon:'⏱', name:'빠른 장전',   desc:'장전시간 -20%',         max:4, baseCost:45,  costMul:1.6,
-    apply: ()=>{ CFG.RELOAD_MS = Math.max(500, CFG.RELOAD_MS * 0.80); } },
-  { id:'armor',   icon:'🛡', name:'장갑 강화',   desc:'초소 최대HP +25',       max:4, baseCost:60,  costMul:1.8,
-    apply: ()=>{ CFG.OUTPOST_HP += 25; hp = Math.min(hp+25, CFG.OUTPOST_HP); updateHUD(); } },
-  { id:'spd',     icon:'🚀', name:'탄속 강화',   desc:'탄환속도 +15%',         max:3, baseCost:55,  costMul:1.7,
-    apply: ()=>{ CFG.BULLET_SPEED *= 1.15; } },
-];
-
-// ── SKILL DEFINITIONS ────────────────────────────────────────
-const SKILLS = [
-  { id:'airstrike', icon:'✈️', name:'공습 요청',  desc:'화면 전체 범위 폭격',   cost:80,  cooldown:25, unlocked:false, cdLeft:0,
-    activate: ()=>{ doAirstrike(); } },
-  { id:'frenzy',    icon:'🔥', name:'광란 사격',  desc:'5초간 무한탄 + 2배 속도', cost:60, cooldown:30, unlocked:false, cdLeft:0,
-    activate: ()=>{ doFrenzy(); } },
-  { id:'shield',    icon:'🔰', name:'방어막',     desc:'5초간 피해 무효',        cost:70,  cooldown:35, unlocked:false, cdLeft:0,
-    activate: ()=>{ doShield(); } },
-];
-
-// ── CONFIG (업그레이드로 변하는 값들) ────────────────────────
-const CFG = {
-  OUTPOST_HP:   100,
-  MAX_AMMO:     20,
-  RELOAD_MS:    1800,
-  FIRE_RATE_MS: 220,   // 발사 간격(ms) — 이전보다 느리게 조정
-  BULLET_SPEED: 480,
-  BULLET_DMG:   14,
-  ARENA_R:      0.40,
+// ── 적 타입 정의 ─────────────────────────────────────────────
+// pattern: 'straight'|'zigzag'|'circle'|'sniper'|'bomber'|'swarm'
+const ENEMY_TYPES = {
+  basic:   { col:'#5a7838', r:13, label:'ZOMBIE',    goldDrop:3,  pattern:'straight', speed:50 },
+  runner:  { col:'#b85520', r:10, label:'RUNNER',    goldDrop:5,  pattern:'zigzag',   speed:90 },
+  brute:   { col:'#443322', r:20, label:'BRUTE',     goldDrop:10, pattern:'straight', speed:44 },
+  sniper:  { col:'#223355', r:11, label:'SNIPER',    goldDrop:8,  pattern:'sniper',   speed:35 },
+  bomber:  { col:'#554400', r:14, label:'BOMBER',    goldDrop:7,  pattern:'circle',   speed:60 },
+  swarm:   { col:'#2a4a22', r:8,  label:'SWARM',     goldDrop:2,  pattern:'swarm',    speed:75 },
+  giant:   { col:'#2a1a0a', r:28, label:'GIANT',     goldDrop:25, pattern:'straight', speed:38 },
+  specter: { col:'#334433', r:12, label:'SPECTER',   goldDrop:12, pattern:'teleport', speed:65 },
 };
 
-// ── STATE ─────────────────────────────────────────────────────
-let W, H, cx, cy, R;
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
+// ── 10 WAVE TABLE ────────────────────────────────────────────
+const WAVES = [
+  { w:1,  squads:[{count:6,  type:'basic',  hp:28,  speed:48}],                                         spawnMs:700, reward:30  },
+  { w:2,  squads:[{count:8,  type:'basic',  hp:32,  speed:52},{count:3,type:'runner',hp:22,speed:88}],  spawnMs:600, reward:45  },
+  { w:3,  squads:[{count:6,  type:'runner', hp:38,  speed:85},{count:4,type:'basic', hp:40,speed:50}],  spawnMs:520, reward:55  },
+  { w:4,  squads:[{count:5,  type:'brute',  hp:80,  speed:44},{count:6,type:'runner',hp:35,speed:90}],  spawnMs:580, reward:70  },
+  { w:5,  squads:[{count:4,  type:'sniper', hp:50,  speed:35},{count:8,type:'swarm', hp:18,speed:80}],  spawnMs:480, reward:85  },
+  { w:6,  squads:[{count:5,  type:'bomber', hp:65,  speed:58},{count:6,type:'brute', hp:95,speed:42}],  spawnMs:550, reward:100 },
+  { w:7,  squads:[{count:10, type:'swarm',  hp:25,  speed:88},{count:4,type:'sniper',hp:65,speed:38},{count:3,type:'runner',hp:55,speed:95}], spawnMs:380, reward:120 },
+  { w:8,  squads:[{count:4,  type:'specter',hp:85,  speed:65},{count:5,type:'brute', hp:120,speed:46},{count:4,type:'bomber',hp:75,speed:62}], spawnMs:500, reward:140 },
+  { w:9,  squads:[{count:6,  type:'sniper', hp:90,  speed:40},{count:8,type:'specter',hp:75,speed:68},{count:6,type:'swarm',hp:30,speed:95}], spawnMs:340, reward:170 },
+  { w:10, squads:[{count:5,  type:'giant',  hp:320, speed:38},{count:6,type:'bomber',hp:90,speed:65},{count:8,type:'runner',hp:70,speed:98}], spawnMs:600, reward:250 },
+];
 
-let turretAngle=0, targetAngle=0, outpostRot=0;
-let bullets=[], enemies=[], particles=[], trees=[];
-let hp=100, kills=0, ammo=CFG.MAX_AMMO, gold=0;
-let waveIdx=0, enemiesLeft=0, waveActive=false;
-let isReloading=false, reloadTimer=0, lastFire=0;
-let touchX=null, touchY=null;
-let gameRunning=false, raf, lastTime=0;
-let screenShake=0;
-let upgradeLevel={};   // { id: level }
-let shieldActive=false, shieldTimer=0;
-let frenzyActive=false, frenzyTimer=0;
-let currentTab='fire';
-
-// ── WEB AUDIO SYNTH ──────────────────────────────────────────
-let audioCtx;
-function sfx(type) {
-  try {
-    if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
-    o.connect(g); g.connect(audioCtx.destination);
-    const t=audioCtx.currentTime;
-    if(type==='shoot'){
-      o.type='sawtooth'; o.frequency.setValueAtTime(frenzyActive?300:200,t);
-      o.frequency.exponentialRampToValueAtTime(70,t+.08);
-      g.gain.setValueAtTime(.18,t); g.gain.exponentialRampToValueAtTime(.001,t+.1);
-      o.start(t); o.stop(t+.12);
-    } else if(type==='hit'){
-      o.type='square'; o.frequency.setValueAtTime(130,t);
-      g.gain.setValueAtTime(.2,t); g.gain.exponentialRampToValueAtTime(.001,t+.13);
-      o.start(t); o.stop(t+.15);
-    } else if(type==='die'){
-      o.type='sawtooth'; o.frequency.setValueAtTime(170,t);
-      o.frequency.exponentialRampToValueAtTime(35,t+.35);
-      g.gain.setValueAtTime(.26,t); g.gain.exponentialRampToValueAtTime(.001,t+.38);
-      o.start(t); o.stop(t+.40);
-    } else if(type==='reload'){
-      o.type='sine'; o.frequency.setValueAtTime(480,t);
-      o.frequency.exponentialRampToValueAtTime(820,t+.18);
-      g.gain.setValueAtTime(.1,t); g.gain.exponentialRampToValueAtTime(.001,t+.2);
-      o.start(t); o.stop(t+.22);
-    } else if(type==='boom'){
-      o.type='sawtooth'; o.frequency.setValueAtTime(80,t);
-      o.frequency.exponentialRampToValueAtTime(20,t+.5);
-      g.gain.setValueAtTime(.4,t); g.gain.exponentialRampToValueAtTime(.001,t+.55);
-      o.start(t); o.stop(t+.6);
-    }
-  } catch(e){}
-}
-
-// ── RESIZE / TREES ────────────────────────────────────────────
-function resize() {
-  W=canvas.width=window.innerWidth;
-  H=canvas.height=window.innerHeight;
-  cx=W/2; cy=H/2;
-  R=Math.min(W,H)*CFG.ARENA_R;
-  buildTrees();
-}
-function buildTrees() {
-  trees=[];
-  for(let i=0;i<30;i++) {
-    const a=(i/30)*Math.PI*2+Math.random()*.35;
-    const r=R+20+Math.random()*45;
-    trees.push({ x:cx+Math.cos(a)*r, y:cy+Math.sin(a)*r,
-      r:7+Math.random()*11, hue:95+Math.random()*40, lum:.12+Math.random()*.1 });
-  }
-}
-
-// ── AMMO BAR ─────────────────────────────────────────────────
-function buildAmmoBar() {
-  const el=document.getElementById('ammorow'); el.innerHTML='';
-  for(let i=0;i<CFG.MAX_AMMO;i++){
-    const d=document.createElement('div'); d.className='atick'; d.id='a'+i; el.appendChild(d);
-  }
-}
-function updateAmmoBar() {
-  for(let i=0;i<CFG.MAX_AMMO;i++){
-    const e=document.getElementById('a'+i);
-    if(e) e.className='atick'+(i<ammo?'':' spent');
-  }
-}
-
-// ── SKILL BAR ────────────────────────────────────────────────
-function buildSkillBar() {
-  const el=document.getElementById('skillBar'); el.innerHTML='';
-  SKILLS.forEach((sk,i)=>{
-    if(!sk.unlocked) return;
-    const d=document.createElement('div'); d.className='skillSlot';
-    d.innerHTML=sk.icon; d.id='sk'+sk.id;
-    d.onclick=()=>activateSkill(i);
-    el.appendChild(d);
-  });
-}
-function updateSkillBar(dt) {
-  SKILLS.forEach(sk=>{
-    if(!sk.unlocked) return;
-    const el=document.getElementById('sk'+sk.id); if(!el) return;
-    if(sk.cdLeft>0) {
-      sk.cdLeft=Math.max(0,sk.cdLeft-dt);
-      el.innerHTML=sk.icon+`<div class="cd">${Math.ceil(sk.cdLeft)}</div>`;
-    } else {
-      el.innerHTML=sk.icon;
-    }
-  });
-}
-function activateSkill(idx) {
-  const sk=SKILLS[idx];
-  if(!sk||!sk.unlocked||sk.cdLeft>0) return;
-  sk.cdLeft=sk.cooldown;
-  sk.activate();
-  buildSkillBar();
-}
+// ── UPGRADES ─────────────────────────────────────────────────
+const UPGRADES = [
+  { id:'dmg',    icon:'💥', name:'화력 강화',  desc:'탄약 피해량 +6',    max:5, baseCost:40, costMul:1.6, apply:()=>{ CFG.BULLET_DMG+=6; } },
+  { id:'rate',   icon:'⚡', name:'발사속도',   desc:'연사속도 +15%',     max:5, baseCost:50, costMul:1.7, apply:()=>{ CFG.FIRE_RATE_MS=Math.max(60,CFG.FIRE_RATE_MS*.85); } },
+  { id:'ammo',   icon:'🔋', name:'탄창 확장',  desc:'탄약 +5발',         max:4, baseCost:35, costMul:1.5, apply:()=>{ CFG.MAX_AMMO+=5; buildAmmoBar(); } },
+  { id:'reload', icon:'⏱', name:'빠른 장전',  desc:'장전시간 -20%',     max:4, baseCost:45, costMul:1.6, apply:()=>{ CFG.RELOAD_MS=Math.max(500,CFG.RELOAD_MS*.80); } },
+  { id:'armor',  icon:'🛡', name:'장갑 강화',  desc:'최대HP +25',        max:4, baseCost:60, costMul:1.8, apply:()=>{ CFG.OUTPOST_HP+=25; hp=Math.min(hp+25,CFG.OUTPOST_HP); updateHUD(); } },
+  { id:'spd',    icon:'🚀', name:'탄속 강화',  desc:'탄환속도 +15%',     max:3, baseCost:55, costMul:1.7, apply:()=>{ CFG.BULLET_SPEED*=1.15; } },
+];
 
 // ── SKILLS ───────────────────────────────────────────────────
-function doAirstrike() {
-  sfx('boom'); screenShake=12;
-  for(let i=enemies.length-1;i>=0;i--) {
-    const e=enemies[i];
-    spawnParticles(e.x,e.y,'#ff6600',10,140,.6);
-    spawnParticles(e.x,e.y,'#ffcc00',6,90,.4);
-    e.dead=true; kills++; enemiesLeft--;
-    enemies.splice(i,1);
-  }
-  updateHUD();
-  if(enemiesLeft<=0&&waveActive) onWaveClear();
-  // big flash particles across arena
-  for(let i=0;i<20;i++){
-    const a=Math.random()*Math.PI*2, r=Math.random()*R;
-    spawnParticles(cx+Math.cos(a)*r,cy+Math.sin(a)*r,'#ff8800',8,120,.5);
-  }
-}
-function doFrenzy() {
-  frenzyActive=true; frenzyTimer=5;
-  showBanner('🔥 FRENZY!','#ff6600');
-}
-function doShield() {
-  shieldActive=true; shieldTimer=5;
-  showBanner('🔰 SHIELD ACTIVE','#4488ff');
+const SKILLS = [
+  { id:'airstrike', icon:'✈️', name:'공습 요청',  desc:'전체 적 폭격',       cost:80, cooldown:25, unlocked:false, cdLeft:0, activate:doAirstrike },
+  { id:'frenzy',    icon:'🔥', name:'광란 사격',  desc:'5초 무한탄+2배속',   cost:60, cooldown:30, unlocked:false, cdLeft:0, activate:doFrenzy },
+  { id:'shield',    icon:'🔰', name:'방어막',     desc:'5초 피해 무효',       cost:70, cooldown:35, unlocked:false, cdLeft:0, activate:doShield },
+];
+
+// ── CFG ──────────────────────────────────────────────────────
+const CFG = { OUTPOST_HP:100, MAX_AMMO:20, RELOAD_MS:1800, FIRE_RATE_MS:200, BULLET_SPEED:480, BULLET_DMG:14, ARENA_R:.40 };
+const OUTPOST_BLOCK_R = 52; // 적이 이 거리 이내로 들어오지 못함 (총알 발사 위치보다 항상 바깥)
+const BULLET_START_R  = 44; // 총알 발사 시작 반경
+
+// ── STATE ────────────────────────────────────────────────────
+let W,H,cx,cy,R;
+const canvas=document.getElementById('c'), ctx=canvas.getContext('2d');
+let turretAngle=0,targetAngle=0,outpostRot=0;
+let bullets=[],enemies=[],particles=[],trees=[],floatingTexts=[];
+let hp=100,kills=0,ammo=20,gold=0;
+let waveIdx=0,enemiesLeft=0,waveActive=false;
+let isReloading=false,reloadTimer=0,lastFire=0;
+let touchX=null,touchY=null;
+let gameRunning=false,raf,lastTime=0,screenShake=0;
+let upgradeLevel={};
+let shieldActive=false,shieldTimer=0,frenzyActive=false,frenzyTimer=0;
+let currentTab='fire';
+// 스나이퍼 발사체 (적이 쏘는 것)
+let enemyBullets=[];
+
+// ── AUDIO ────────────────────────────────────────────────────
+let audioCtx;
+function sfx(type){
+  try{
+    if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.connect(g);g.connect(audioCtx.destination);
+    const t=audioCtx.currentTime;
+    if(type==='shoot'){o.type='sawtooth';o.frequency.setValueAtTime(200,t);o.frequency.exponentialRampToValueAtTime(70,t+.08);g.gain.setValueAtTime(.18,t);g.gain.exponentialRampToValueAtTime(.001,t+.10);o.start(t);o.stop(t+.12);}
+    else if(type==='hit'){o.type='square';o.frequency.setValueAtTime(130,t);g.gain.setValueAtTime(.2,t);g.gain.exponentialRampToValueAtTime(.001,t+.12);o.start(t);o.stop(t+.14);}
+    else if(type==='die'){o.type='sawtooth';o.frequency.setValueAtTime(160,t);o.frequency.exponentialRampToValueAtTime(32,t+.35);g.gain.setValueAtTime(.26,t);g.gain.exponentialRampToValueAtTime(.001,t+.38);o.start(t);o.stop(t+.40);}
+    else if(type==='reload'){o.type='sine';o.frequency.setValueAtTime(480,t);o.frequency.exponentialRampToValueAtTime(820,t+.18);g.gain.setValueAtTime(.1,t);g.gain.exponentialRampToValueAtTime(.001,t+.20);o.start(t);o.stop(t+.22);}
+    else if(type==='boom'){o.type='sawtooth';o.frequency.setValueAtTime(80,t);o.frequency.exponentialRampToValueAtTime(18,t+.5);g.gain.setValueAtTime(.4,t);g.gain.exponentialRampToValueAtTime(.001,t+.55);o.start(t);o.stop(t+.6);}
+    else if(type==='snipe'){o.type='sawtooth';o.frequency.setValueAtTime(400,t);o.frequency.exponentialRampToValueAtTime(60,t+.2);g.gain.setValueAtTime(.25,t);g.gain.exponentialRampToValueAtTime(.001,t+.22);o.start(t);o.stop(t+.24);}
+  }catch(e){}
 }
 
+// ── RESIZE ───────────────────────────────────────────────────
+function resize(){
+  W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight;
+  cx=W/2; cy=H/2; R=Math.min(W,H)*CFG.ARENA_R; buildTrees();
+}
+function buildTrees(){
+  trees=[];
+  for(let i=0;i<30;i++){
+    const a=(i/30)*Math.PI*2+Math.random()*.35, r=R+20+Math.random()*45;
+    trees.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r,r:7+Math.random()*11,hue:95+Math.random()*40,lum:.12+Math.random()*.1});
+  }
+}
+
+// ── AMMO / SKILL BAR ─────────────────────────────────────────
+function buildAmmoBar(){
+  const el=document.getElementById('ammorow'); el.innerHTML='';
+  for(let i=0;i<CFG.MAX_AMMO;i++){const d=document.createElement('div');d.className='atick';d.id='a'+i;el.appendChild(d);}
+}
+function updateAmmoBar(){
+  for(let i=0;i<CFG.MAX_AMMO;i++){const e=document.getElementById('a'+i);if(e)e.className='atick'+(i<ammo?'':' spent');}
+}
+function buildSkillBar(){
+  const el=document.getElementById('skillBar'); el.innerHTML='';
+  SKILLS.forEach((sk,i)=>{
+    if(!sk.unlocked)return;
+    const d=document.createElement('div');d.className='skillSlot';d.innerHTML=sk.icon;d.id='sk'+sk.id;
+    d.onclick=()=>activateSkill(i); el.appendChild(d);
+  });
+}
+function updateSkillBar(dt){
+  SKILLS.forEach(sk=>{
+    if(!sk.unlocked)return;
+    const el=document.getElementById('sk'+sk.id);if(!el)return;
+    if(sk.cdLeft>0){sk.cdLeft=Math.max(0,sk.cdLeft-dt);el.innerHTML=sk.icon+`<div class="cd">${Math.ceil(sk.cdLeft)}</div>`;}
+    else el.innerHTML=sk.icon;
+  });
+}
+function activateSkill(idx){
+  const sk=SKILLS[idx];if(!sk||!sk.unlocked||sk.cdLeft>0)return;
+  sk.cdLeft=sk.cooldown; sk.activate(); buildSkillBar();
+}
+
+// ── SKILL EFFECTS ────────────────────────────────────────────
+function doAirstrike(){
+  sfx('boom'); screenShake=14;
+  for(let i=enemies.length-1;i>=0;i--){
+    const e=enemies[i];
+    spawnParticles(e.x,e.y,'#ff6600',10,140,.6);
+    const gd=ENEMY_TYPES[e.type]?.goldDrop||3;
+    gold+=gd; spawnGoldText(e.x,e.y,gd);
+    kills++; enemiesLeft--; enemies.splice(i,1);
+  }
+  enemyBullets=[];
+  for(let i=0;i<22;i++){const a=Math.random()*Math.PI*2,r=Math.random()*R;spawnParticles(cx+Math.cos(a)*r,cy+Math.sin(a)*r,'#ff8800',6,110,.45);}
+  updateHUD(); if(enemiesLeft<=0&&waveActive)onWaveClear();
+}
+function doFrenzy(){frenzyActive=true;frenzyTimer=5;showBanner('🔥 FRENZY!','#ff6600');}
+function doShield(){shieldActive=true;shieldTimer=5;showBanner('🔰 SHIELD ACTIVE','#4488ff');}
+
 // ── HUD ──────────────────────────────────────────────────────
-function updateHUD() {
+function updateHUD(){
   document.getElementById('wn').textContent=Math.min(waveIdx+1,WAVES.length);
   document.getElementById('hn').textContent=hp;
   document.getElementById('kn').textContent=kills;
+  document.getElementById('gn').textContent=gold;
   document.getElementById('hpfill').style.width=(hp/CFG.OUTPOST_HP*100)+'%';
-  document.getElementById('goldVal').textContent=gold;
 }
 
 // ── BANNER ───────────────────────────────────────────────────
-let bannerTimer;
+let bannerTmr;
 function showBanner(txt,col='#fff'){
   const el=document.getElementById('banner');
-  el.textContent=txt; el.style.color=col; el.style.opacity='1';
-  clearTimeout(bannerTimer);
-  bannerTimer=setTimeout(()=>el.style.opacity='0',1800);
+  el.textContent=txt;el.style.color=col;el.style.opacity='1';
+  clearTimeout(bannerTmr);bannerTmr=setTimeout(()=>el.style.opacity='0',1800);
 }
 
 // ── KILL FEED ────────────────────────────────────────────────
-const TYPE_LABELS={basic:'ZOMBIE DOWN',runner:'RUNNER ELIMINATED',brute:'BRUTE DESTROYED',giant:'GIANT SLAIN ★'};
 function killMsg(type){
+  const lb=ENEMY_TYPES[type]?.label||'ENEMY';
   const feed=document.getElementById('killfeed');
-  const d=document.createElement('div'); d.className='km';
-  d.textContent=TYPE_LABELS[type]||'KILL'; feed.appendChild(d);
+  const d=document.createElement('div');d.className='km';d.textContent=lb+' DOWN';feed.appendChild(d);
   setTimeout(()=>{if(d.parentNode)d.parentNode.removeChild(d);},2600);
 }
 
+// ── FLOATING GOLD TEXT ───────────────────────────────────────
+function spawnGoldText(x,y,amount){
+  floatingTexts.push({x,y,vy:-60,life:1.2,maxLife:1.2,text:'+💰'+amount});
+}
+
 // ── MENU TABS ────────────────────────────────────────────────
-function setTab(tab) {
+function setTab(tab){
   currentTab=tab;
   ['fire','upgrade','skill'].forEach(t=>{
-    document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1))
-      .classList.toggle('active',t===tab);
+    document.getElementById('tab'+t[0].toUpperCase()+t.slice(1)).classList.toggle('active',t===tab);
   });
   const panel=document.getElementById('panel');
-  if(tab==='fire'){ panel.style.display='none'; return; }
+  if(tab==='fire'){panel.style.display='none';return;}
   panel.style.display='block';
-  if(tab==='upgrade') renderUpgradePanel();
-  else renderSkillPanel();
+  tab==='upgrade'?renderUpgradePanel():renderSkillPanel();
 }
-
-function renderUpgradePanel() {
+function renderUpgradePanel(){
   const panel=document.getElementById('panel');
-  const lv=upgradeLevel;
   panel.innerHTML='<h3>⚙ OUTPOST UPGRADES</h3>'+UPGRADES.map(u=>{
-    const lvl=lv[u.id]||0;
-    const maxed=lvl>=u.max;
-    const cost=Math.round(u.baseCost*Math.pow(u.costMul,lvl));
-    const canAfford=gold>=cost&&!maxed;
-    return `<div class="upgradeRow${maxed?' maxed':''}" onclick="buyUpgrade('${u.id}')">
+    const lv=upgradeLevel[u.id]||0,maxed=lv>=u.max,cost=Math.round(u.baseCost*Math.pow(u.costMul,lv));
+    return`<div class="upgradeRow${maxed?' maxed':''}" onclick="buyUpgrade('${u.id}')">
       <div class="icon">${u.icon}</div>
-      <div class="info">
-        <div class="uname">${u.name}</div>
-        <div class="udesc">${u.desc}</div>
-        <div class="ulevel">${'█'.repeat(lvl)}${'░'.repeat(u.max-lvl)} Lv${lvl}/${u.max}</div>
-      </div>
-      <div class="cost">${maxed?'MAX':'💰'+cost}</div>
-    </div>`;
+      <div class="info"><div class="uname">${u.name}</div><div class="udesc">${u.desc}</div>
+      <div class="ulevel">${'█'.repeat(lv)}${'░'.repeat(u.max-lv)} Lv${lv}/${u.max}</div></div>
+      <div class="cost">${maxed?'MAX':'💰'+cost}</div></div>`;
   }).join('');
 }
-
-function renderSkillPanel() {
+function renderSkillPanel(){
   const panel=document.getElementById('panel');
-  panel.innerHTML='<h3>⚡ SKILLS</h3>'+SKILLS.map((sk,i)=>{
-    const cost=sk.cost;
-    const canAfford=gold>=cost&&!sk.unlocked;
-    return `<div class="upgradeRow${sk.unlocked?' maxed':''}" onclick="buySkill(${i})">
+  panel.innerHTML='<h3>⚡ SKILLS</h3>'+SKILLS.map((sk,i)=>`
+    <div class="upgradeRow${sk.unlocked?' maxed':''}" onclick="buySkill(${i})">
       <div class="icon">${sk.icon}</div>
-      <div class="info">
-        <div class="uname">${sk.name}</div>
-        <div class="udesc">${sk.desc}</div>
-        <div class="ulevel">쿨타임 ${sk.cooldown}초${sk.unlocked?' · 보유중':''}</div>
-      </div>
-      <div class="cost">${sk.unlocked?'✓':'💰'+cost}</div>
-    </div>`;
-  }).join('');
+      <div class="info"><div class="uname">${sk.name}</div><div class="udesc">${sk.desc}</div>
+      <div class="ulevel">쿨타임 ${sk.cooldown}초${sk.unlocked?' · 보유중':''}</div></div>
+      <div class="cost">${sk.unlocked?'✓':'💰'+sk.cost}</div></div>`).join('');
 }
-
-function buyUpgrade(id) {
-  const u=UPGRADES.find(x=>x.id===id); if(!u) return;
-  const lvl=upgradeLevel[id]||0; if(lvl>=u.max) return;
-  const cost=Math.round(u.baseCost*Math.pow(u.costMul,lvl));
-  if(gold<cost){ showBanner('골드 부족!','#ff4444'); return; }
-  gold-=cost; upgradeLevel[id]=(lvl+1);
-  u.apply(); updateHUD(); renderUpgradePanel();
+function buyUpgrade(id){
+  const u=UPGRADES.find(x=>x.id===id);if(!u)return;
+  const lv=upgradeLevel[id]||0;if(lv>=u.max)return;
+  const cost=Math.round(u.baseCost*Math.pow(u.costMul,lv));
+  if(gold<cost){showBanner('골드 부족!','#ff4444');return;}
+  gold-=cost;upgradeLevel[id]=(lv+1);u.apply();updateHUD();renderUpgradePanel();
   showBanner(u.name+' 강화!','#b8ff50');
 }
-function buySkill(idx) {
-  const sk=SKILLS[idx]; if(!sk||sk.unlocked) return;
-  if(gold<sk.cost){ showBanner('골드 부족!','#ff4444'); return; }
-  gold-=sk.cost; sk.unlocked=true;
-  updateHUD(); buildSkillBar(); renderSkillPanel();
+function buySkill(idx){
+  const sk=SKILLS[idx];if(!sk||sk.unlocked)return;
+  if(gold<sk.cost){showBanner('골드 부족!','#ff4444');return;}
+  gold-=sk.cost;sk.unlocked=true;updateHUD();buildSkillBar();renderSkillPanel();
   showBanner(sk.name+' 습득!','#4488ff');
 }
 
-// ── INPUT ────────────────────────────────────────────────────
-function setupInput() {
-  canvas.addEventListener('touchstart',e=>{ e.preventDefault(); const t=e.touches[0]; touchX=t.clientX; touchY=t.clientY; },{passive:false});
-  canvas.addEventListener('touchmove', e=>{ e.preventDefault(); const t=e.touches[0]; touchX=t.clientX; touchY=t.clientY; },{passive:false});
-  canvas.addEventListener('touchend',  e=>{ e.preventDefault(); touchX=touchY=null; },{passive:false});
-  canvas.addEventListener('mousedown', e=>{ touchX=e.clientX; touchY=e.clientY; });
-  canvas.addEventListener('mousemove', e=>{ if(e.buttons){touchX=e.clientX;touchY=e.clientY;} });
-  canvas.addEventListener('mouseup',   ()=>{ touchX=touchY=null; });
+// ── INPUT — 좌우 터치 비율로 360° 포탑 회전 ────────────────
+// 화면 X 위치를 0~1로 정규화 → 0=서쪽(180°), 0.5=북쪽(270°), 1=동쪽(0°)
+// 실제 매핑: X비율 0→1이 각도 -180°→+180° (북쪽 기준)
+function touchToAngle(x){
+  // x: 0(왼쪽끝)~W(오른쪽끝) → 각도 π~-π (위쪽=0 기준)
+  const ratio = x/W; // 0~1
+  return (ratio - 0.5) * Math.PI * 2 - Math.PI/2;
+}
+
+let panelTouchBlocked=false;
+function setupInput(){
+  // 패널 외부 터치 시 fire 탭으로 복귀
+  canvas.addEventListener('touchstart',e=>{
+    e.preventDefault();
+    if(currentTab!=='fire'){setTab('fire');return;}
+    const t=e.touches[0]; touchX=t.clientX; touchY=t.clientY;
+  },{passive:false});
+  canvas.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    if(currentTab!=='fire')return;
+    const t=e.touches[0]; touchX=t.clientX; touchY=t.clientY;
+  },{passive:false});
+  canvas.addEventListener('touchend',e=>{e.preventDefault();touchX=touchY=null;},{passive:false});
+
+  // 마우스
+  canvas.addEventListener('mousedown',e=>{
+    if(currentTab!=='fire'){setTab('fire');return;}
+    touchX=e.clientX;touchY=e.clientY;
+  });
+  canvas.addEventListener('mousemove',e=>{if(e.buttons&&currentTab==='fire'){touchX=e.clientX;touchY=e.clientY;}});
+  canvas.addEventListener('mouseup',()=>{touchX=touchY=null;});
 }
 
 // ── PARTICLES ────────────────────────────────────────────────
 function spawnParticles(x,y,col,n,spd,life){
-  for(let i=0;i<n;i++){
-    const a=Math.random()*Math.PI*2,s=spd*(.4+Math.random());
-    particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life,maxLife:life,col,r:2+Math.random()*3});
-  }
+  for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=spd*(.4+Math.random());
+    particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life,maxLife:life,col,r:2+Math.random()*3});}
 }
-function spawnRing(x,y,col){
-  particles.push({x,y,ring:true,r:4,maxR:30,life:.35,maxLife:.35,col});
-}
+function spawnRing(x,y,col){particles.push({x,y,ring:true,r:4,maxR:30,life:.35,maxLife:.35,col});}
 function spawnMuzzle(x,y,angle){
-  for(let i=0;i<4;i++){
-    const a=angle+(Math.random()-.5)*.5,s=160+Math.random()*100;
-    particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.12,maxLife:.12,col:'#ffe566',r:3+Math.random()*3});
-  }
+  for(let i=0;i<4;i++){const a=angle+(Math.random()-.5)*.5,s=150+Math.random()*90;
+    particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.11,maxLife:.11,col:'#ffe566',r:3+Math.random()*3});}
 }
 
 // ── FIRE ─────────────────────────────────────────────────────
 function fireBullet(){
-  const noAmmo=!frenzyActive&&ammo<=0;
-  if(noAmmo||isReloading) return;
-  const now=performance.now();
-  const rate=frenzyActive?CFG.FIRE_RATE_MS*0.35:CFG.FIRE_RATE_MS;
-  if(now-lastFire<rate) return;
+  if(!frenzyActive&&(ammo<=0||isReloading))return;
+  const now=performance.now(),rate=frenzyActive?CFG.FIRE_RATE_MS*.35:CFG.FIRE_RATE_MS;
+  if(now-lastFire<rate)return;
   lastFire=now;
-  if(!frenzyActive){ ammo--; updateAmmoBar(); }
+  if(!frenzyActive){ammo--;updateAmmoBar();}
   sfx('shoot');
-
-  // 초소에 붙어있는 적이 있으면 그쪽으로 자동 조준 보정
-  let fireAngle = turretAngle;
-  let closestDist = Infinity;
-  for(const e of enemies){
-    if(e.dead) continue;
-    const dx=e.x-cx, dy=e.y-cy;
-    const d=Math.sqrt(dx*dx+dy*dy);
-    if(d < closestDist){
-      closestDist=d;
-      // 초소 공격범위 안에 있는 적이면 그 방향으로 강제 조준
-      if(d < e.r + 55){
-        fireAngle = Math.atan2(dy, dx);
-      }
-    }
-  }
-
-  // 총알 시작점: 초소 중심에서 방향으로 일정 거리 앞 (적 크기보다 충분히 멀리)
-  const startR = 42;
-  const tip={x:cx+Math.cos(fireAngle)*startR, y:cy+Math.sin(fireAngle)*startR};
-  spawnMuzzle(tip.x,tip.y,fireAngle);
-  bullets.push({x:tip.x,y:tip.y,
-    vx:Math.cos(fireAngle)*CFG.BULLET_SPEED,
-    vy:Math.sin(fireAngle)*CFG.BULLET_SPEED,
-    life:1.3});
+  const sx=cx+Math.cos(turretAngle)*BULLET_START_R;
+  const sy=cy+Math.sin(turretAngle)*BULLET_START_R;
+  spawnMuzzle(sx,sy,turretAngle);
+  bullets.push({x:sx,y:sy,vx:Math.cos(turretAngle)*CFG.BULLET_SPEED,vy:Math.sin(turretAngle)*CFG.BULLET_SPEED,life:1.4});
   screenShake=Math.max(screenShake,2.5);
-  if(!frenzyActive&&ammo===0) startReload();
+  if(!frenzyActive&&ammo===0)startReload();
 }
-function startReload(){
-  isReloading=true; sfx('reload'); reloadTimer=CFG.RELOAD_MS;
-  showBanner('RELOADING...','#ffaa00');
-}
+function startReload(){isReloading=true;sfx('reload');reloadTimer=CFG.RELOAD_MS;showBanner('RELOADING...','#ffaa00');}
 
 // ── ENEMY SPAWN ───────────────────────────────────────────────
-function spawnEnemy(waveDef){
+function spawnEnemy(squad){
+  const def=ENEMY_TYPES[squad.type]||ENEMY_TYPES.basic;
   const a=Math.random()*Math.PI*2;
-  const ECFG={
-    basic:  {col:'#5a7838',r:13,hpMul:1},
-    runner: {col:'#b85520',r:11,hpMul:1},
-    brute:  {col:'#443322',r:19,hpMul:1},
-    giant:  {col:'#2a1a0a',r:28,hpMul:1},
-  };
-  const ec=ECFG[waveDef.type]||ECFG.basic;
-  enemies.push({
-    x:cx+Math.cos(a)*(R+12),y:cy+Math.sin(a)*(R+12),
-    hp:waveDef.hp,maxHp:waveDef.hp,
-    speed:waveDef.speed,type:waveDef.type,
-    col:ec.col,r:ec.r,
+  const e={
+    x:cx+Math.cos(a)*(R+14),y:cy+Math.sin(a)*(R+14),
+    hp:squad.hp,maxHp:squad.hp,
+    speed:squad.speed||def.speed,
+    type:squad.type,col:def.col,r:def.r,
     angle:0,bobT:Math.random()*Math.PI*2,
     hitFlash:0,dead:false,attackTimer:0,
-  });
+    // 패턴별 상태
+    pattern:def.pattern,
+    zigDir:Math.random()>.5?1:-1, zigTimer:0,
+    orbitDir:Math.random()>.5?1:-1, orbitAngle:Math.atan2(cy-(cy+Math.sin(a)*(R+14)),cx-(cx+Math.cos(a)*(R+14))),
+    teleTimer:3+Math.random()*2,
+    sniperTimer:2+Math.random()*2,
+    sniperCharging:false,sniperChargeTimer:0,
+    swarmAngle:Math.random()*Math.PI*2,
+  };
+  enemies.push(e);
+}
+
+function buildWaveSquads(waveDef){
+  const all=[];
+  for(const sq of waveDef.squads) for(let i=0;i<sq.count;i++) all.push(sq);
+  return all;
 }
 
 function startWave(){
   if(waveIdx>=WAVES.length){winGame();return;}
   const w=WAVES[waveIdx];
-  enemiesLeft=w.count; waveActive=true;
-  showBanner('WAVE '+w.w+(w.w===10?'\n⚠ FINAL WAVE':''),'#ff9900');
+  const squads=buildWaveSquads(w);
+  enemiesLeft=squads.length; waveActive=true;
+  showBanner('WAVE '+w.w+(w.w===10?' ⚠ FINAL':''),'#ff9900');
   let spawned=0;
   const iv=setInterval(()=>{
     if(!gameRunning){clearInterval(iv);return;}
-    if(spawned>=w.count){clearInterval(iv);return;}
-    spawnEnemy(w); spawned++;
+    if(spawned>=squads.length){clearInterval(iv);return;}
+    spawnEnemy(squads[spawned]); spawned++;
   },w.spawnMs);
 }
 
@@ -569,333 +477,380 @@ function onWaveClear(){
   gold+=reward; updateHUD();
   showBanner('WAVE CLEAR! +💰'+reward,'#b8ff50');
   waveIdx++;
-  if(waveIdx>=WAVES.length) setTimeout(winGame,1600);
+  if(waveIdx>=WAVES.length)setTimeout(winGame,1600);
   else setTimeout(startWave,2800);
 }
 
 // ── MAIN LOOP ────────────────────────────────────────────────
 function loop(ts){
   raf=requestAnimationFrame(loop);
-  if(!gameRunning) return;
+  if(!gameRunning)return;
   const dt=Math.min((ts-lastTime)/1000,.05); lastTime=ts;
 
   // Timers
-  if(isReloading){ reloadTimer-=dt*1000; if(reloadTimer<=0){isReloading=false;ammo=CFG.MAX_AMMO;updateAmmoBar();} }
-  if(frenzyActive){ frenzyTimer-=dt; if(frenzyTimer<=0)frenzyActive=false; }
-  if(shieldActive){ shieldTimer-=dt; if(shieldTimer<=0)shieldActive=false; }
+  if(isReloading){reloadTimer-=dt*1000;if(reloadTimer<=0){isReloading=false;ammo=CFG.MAX_AMMO;updateAmmoBar();}}
+  if(frenzyActive){frenzyTimer-=dt;if(frenzyTimer<=0)frenzyActive=false;}
+  if(shieldActive){shieldTimer-=dt;if(shieldTimer<=0)shieldActive=false;}
   updateSkillBar(dt);
 
-  // Turret
+  // Turret: X 비율로 각도 변환
   if(touchX!==null&&currentTab==='fire'){
-    targetAngle=Math.atan2(touchY-cy,touchX-cx); fireBullet();
+    targetAngle=touchToAngle(touchX);
+    fireBullet();
   }
   let diff=targetAngle-turretAngle;
-  while(diff>Math.PI)diff-=Math.PI*2; while(diff<-Math.PI)diff+=Math.PI*2;
+  while(diff>Math.PI)diff-=Math.PI*2;while(diff<-Math.PI)diff+=Math.PI*2;
   turretAngle+=diff*Math.min(dt*14,1);
   outpostRot+=dt*.03;
 
-  // Bullets
+  // Player bullets
   for(let i=bullets.length-1;i>=0;i--){
     const b=bullets[i]; b.life-=dt; b.x+=b.vx*dt; b.y+=b.vy*dt;
+    // 아레나 밖으로 나가면 제거
+    const od=Math.sqrt((b.x-cx)**2+(b.y-cy)**2);
+    if(od>R+60||b.life<=0){bullets.splice(i,1);continue;}
     let hit=false;
     for(let j=enemies.length-1;j>=0;j--){
-      const e=enemies[j]; if(e.dead) continue;
+      const e=enemies[j];if(e.dead)continue;
       const dx=b.x-e.x,dy=b.y-e.y;
-      if(dx*dx+dy*dy<(e.r+7)*(e.r+7)){
-        hit=true; sfx('hit'); e.hitFlash=.13;
-        e.hp-=CFG.BULLET_DMG;
-        spawnRing(b.x,b.y,'rgba(255,160,0,.8)');
-        screenShake=Math.max(screenShake,1.8);
-        if(e.hp<=0){killEnemy(j);}
+      if(dx*dx+dy*dy<(e.r+6)*(e.r+6)){
+        hit=true;sfx('hit');e.hitFlash=.13;e.hp-=CFG.BULLET_DMG;
+        spawnRing(b.x,b.y,'rgba(255,160,0,.8)');screenShake=Math.max(screenShake,1.8);
+        if(e.hp<=0)killEnemy(j);
         break;
       }
     }
-    if(hit||b.life<=0) bullets.splice(i,1);
+    if(hit)bullets.splice(i,1);
   }
 
-  // Enemies move + attack
-  for(let i=enemies.length-1;i>=0;i--){
-    const e=enemies[i]; if(e.dead) continue;
-    const dx=cx-e.x,dy=cy-e.y,dist=Math.sqrt(dx*dx+dy*dy);
-    e.angle=Math.atan2(dy,dx);
-    const attackR=e.r+16;  // 초소 콜라이더 크기 충분히 확보
-    if(dist>attackR){
-      e.x+=Math.cos(e.angle)*e.speed*dt;
-      e.y+=Math.sin(e.angle)*e.speed*dt;
-    } else {
-      e.attackTimer+=dt;
-      if(e.attackTimer>=1.0){
-        e.attackTimer=0;
-        if(!shieldActive){
-          const dmg=e.type==='giant'?18:e.type==='brute'?13:e.type==='runner'?5:7;
-          hp=Math.max(0,hp-dmg); updateHUD(); screenShake=6;
-          if(hp<=0){gameOver();return;}
-        } else { showBanner('🔰 막았다!','#4488ff'); }
+  // Enemy bullets (스나이퍼 발사체)
+  for(let i=enemyBullets.length-1;i>=0;i--){
+    const b=enemyBullets[i]; b.life-=dt; b.x+=b.vx*dt; b.y+=b.vy*dt;
+    if(b.life<=0){enemyBullets.splice(i,1);continue;}
+    // 초소 히트
+    const d=Math.sqrt((b.x-cx)**2+(b.y-cy)**2);
+    if(d<28){
+      enemyBullets.splice(i,1);
+      if(!shieldActive){
+        hp=Math.max(0,hp-b.dmg); updateHUD(); screenShake=4;
+        spawnParticles(cx,cy,'#ff4400',6,80,.3);
+        if(hp<=0){gameOver();return;}
       }
     }
+  }
+
+  // Enemies
+  for(let i=enemies.length-1;i>=0;i--){
+    const e=enemies[i];if(e.dead)continue;
+    const dx=cx-e.x,dy=cy-e.y;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    e.angle=Math.atan2(dy,dx);
     e.bobT+=dt*6;
-    if(e.hitFlash>0) e.hitFlash-=dt;
+    if(e.hitFlash>0)e.hitFlash-=dt;
+
+    // 초소 블록 반경: 적이 너무 가까이 못 들어오게
+    const minDist=OUTPOST_BLOCK_R+e.r;
+
+    if(e.pattern==='straight'){
+      if(dist>minDist){
+        e.x+=Math.cos(e.angle)*e.speed*dt;
+        e.y+=Math.sin(e.angle)*e.speed*dt;
+      } else {
+        // 공격
+        e.attackTimer+=dt;
+        if(e.attackTimer>=1.0){
+          e.attackTimer=0;
+          if(!shieldActive){
+            const dmg=e.type==='giant'?18:e.type==='brute'?13:7;
+            hp=Math.max(0,hp-dmg);updateHUD();screenShake=6;
+            if(hp<=0){gameOver();return;}
+          }
+        }
+        // 블록 반경 밖으로 밀어내기
+        const push=minDist-dist+1;
+        e.x-=Math.cos(e.angle)*push; e.y-=Math.sin(e.angle)*push;
+      }
+
+    } else if(e.pattern==='zigzag'){
+      // 지그재그: 좌우로 흔들면서 접근
+      e.zigTimer+=dt;
+      if(e.zigTimer>0.6){e.zigDir*=-1;e.zigTimer=0;}
+      const perpA=e.angle+Math.PI/2;
+      if(dist>minDist){
+        e.x+=(Math.cos(e.angle)*e.speed+Math.cos(perpA)*e.speed*.55*e.zigDir)*dt;
+        e.y+=(Math.sin(e.angle)*e.speed+Math.sin(perpA)*e.speed*.55*e.zigDir)*dt;
+      } else {
+        e.attackTimer+=dt;
+        if(e.attackTimer>=0.8){e.attackTimer=0;if(!shieldActive){hp=Math.max(0,hp-5);updateHUD();if(hp<=0){gameOver();return;}}}
+        const push=minDist-dist+1;e.x-=Math.cos(e.angle)*push;e.y-=Math.sin(e.angle)*push;
+      }
+
+    } else if(e.pattern==='circle'){
+      // 원형 패턴: 일정 거리에서 원을 그리며 접근
+      const orbitR=R*.55;
+      if(dist>orbitR+20){
+        e.x+=Math.cos(e.angle)*e.speed*dt;e.y+=Math.sin(e.angle)*e.speed*dt;
+      } else {
+        // 궤도 돌면서 점점 좁히기
+        e.orbitAngle+=e.orbitDir*dt*1.1;
+        const targetR=Math.max(minDist,dist-dt*18);
+        e.x=cx+Math.cos(e.orbitAngle)*targetR;
+        e.y=cy+Math.sin(e.orbitAngle)*targetR;
+        // 범퍼 근접 공격
+        if(dist<=minDist+4){
+          e.attackTimer+=dt;
+          if(e.attackTimer>=1.2){e.attackTimer=0;if(!shieldActive){hp=Math.max(0,hp-9);updateHUD();screenShake=4;if(hp<=0){gameOver();return;}}}
+        }
+      }
+
+    } else if(e.pattern==='sniper'){
+      // 스나이퍼: 일정 거리 유지하며 원거리 사격
+      const keepDist=R*.7;
+      if(dist>keepDist+15){
+        e.x+=Math.cos(e.angle)*e.speed*dt;e.y+=Math.sin(e.angle)*e.speed*dt;
+      } else if(dist<keepDist-15){
+        e.x-=Math.cos(e.angle)*e.speed*.5*dt;e.y-=Math.sin(e.angle)*e.speed*.5*dt;
+      }
+      // 사격 로직
+      e.sniperTimer-=dt;
+      if(e.sniperTimer<=0){
+        e.sniperTimer=3+Math.random()*2;
+        sfx('snipe');
+        const sa=Math.atan2(cy-e.y,cx-e.x);
+        enemyBullets.push({x:e.x,y:e.y,vx:Math.cos(sa)*220,vy:Math.sin(sa)*220,life:3,dmg:12,col:'#4488ff'});
+        spawnParticles(e.x,e.y,'#4488ff',4,60,.25);
+      }
+
+    } else if(e.pattern==='swarm'){
+      // 스웜: 랜덤 방향으로 빠르게 이동하다 초소 향해 달려듦
+      e.swarmAngle+=dt*(2+Math.sin(e.bobT*.5)*.5);
+      if(dist>R*.5){
+        const mixA=e.angle*.7+e.swarmAngle*.3;
+        e.x+=Math.cos(mixA)*e.speed*dt;e.y+=Math.sin(mixA)*e.speed*dt;
+      } else if(dist>minDist){
+        e.x+=Math.cos(e.angle)*e.speed*1.4*dt;e.y+=Math.sin(e.angle)*e.speed*1.4*dt;
+      } else {
+        e.attackTimer+=dt;
+        if(e.attackTimer>=0.7){e.attackTimer=0;if(!shieldActive){hp=Math.max(0,hp-4);updateHUD();if(hp<=0){gameOver();return;}}}
+        const push=minDist-dist+1;e.x-=Math.cos(e.angle)*push;e.y-=Math.sin(e.angle)*push;
+      }
+
+    } else if(e.pattern==='teleport'){
+      // 스펙터: 일정 시간마다 순간이동
+      e.teleTimer-=dt;
+      if(e.teleTimer<=0){
+        e.teleTimer=3+Math.random()*2;
+        const na=Math.random()*Math.PI*2;
+        const nr=R*.3+Math.random()*R*.5;
+        e.x=cx+Math.cos(na)*nr;e.y=cy+Math.sin(na)*nr;
+        spawnParticles(e.x,e.y,'#88ff88',8,80,.4);
+      }
+      if(dist>minDist){
+        e.x+=Math.cos(e.angle)*e.speed*dt;e.y+=Math.sin(e.angle)*e.speed*dt;
+      } else {
+        e.attackTimer+=dt;
+        if(e.attackTimer>=1.1){e.attackTimer=0;if(!shieldActive){hp=Math.max(0,hp-10);updateHUD();screenShake=5;if(hp<=0){gameOver();return;}}}
+        const push=minDist-dist+1;e.x-=Math.cos(e.angle)*push;e.y-=Math.sin(e.angle)*push;
+      }
+    }
+
+    // 아레나 밖으로 나가지 않도록
+    const ed=Math.sqrt((e.x-cx)**2+(e.y-cy)**2);
+    if(ed>R+30){const ea=Math.atan2(e.y-cy,e.x-cx);e.x=cx+Math.cos(ea)*(R+30);e.y=cy+Math.sin(ea)*(R+30);}
   }
 
   // Particles
   for(let i=particles.length-1;i>=0;i--){
-    const p=particles[i]; p.life-=dt;
+    const p=particles[i];p.life-=dt;
     if(p.life<=0){particles.splice(i,1);continue;}
     if(!p.ring){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=160*dt;}
-    else{p.r+=(p.maxR-4)*(dt/p.maxLife)*3;}
+    else p.r+=(p.maxR-4)*(dt/p.maxLife)*3;
   }
-  screenShake=Math.max(0,screenShake-dt*16);
 
+  // Floating texts
+  for(let i=floatingTexts.length-1;i>=0;i--){
+    const ft=floatingTexts[i]; ft.life-=dt; ft.y+=ft.vy*dt;
+    if(ft.life<=0)floatingTexts.splice(i,1);
+  }
+
+  screenShake=Math.max(0,screenShake-dt*16);
   draw();
 }
 
 // ── DRAW ─────────────────────────────────────────────────────
 function poly(n,r,rot=0){
   ctx.beginPath();
-  for(let i=0;i<n;i++){
-    const a=(i/n)*Math.PI*2+rot;
-    i===0?ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r):ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);
-  }
+  for(let i=0;i<n;i++){const a=(i/n)*Math.PI*2+rot;i===0?ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r):ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);}
   ctx.closePath();
 }
 
 function draw(){
   const sx=screenShake>0?(Math.random()-.5)*screenShake*2:0;
   const sy=screenShake>0?(Math.random()-.5)*screenShake*2:0;
-  ctx.save(); ctx.translate(sx,sy);
+  ctx.save();ctx.translate(sx,sy);
 
-  // Background
-  ctx.fillStyle='#0d1a08'; ctx.fillRect(-20,-20,W+40,H+40);
+  // BG
+  ctx.fillStyle='#0d1a08';ctx.fillRect(-20,-20,W+40,H+40);
 
-  // Arena ground gradient
+  // Arena ground
   const grd=ctx.createRadialGradient(cx,cy,0,cx,cy,R+55);
-  grd.addColorStop(0,'#1e3010'); grd.addColorStop(.7,'#162408'); grd.addColorStop(1,'#0d1a08');
-  ctx.beginPath(); ctx.arc(cx,cy,R+55,0,Math.PI*2);
-  ctx.fillStyle=grd; ctx.fill();
+  grd.addColorStop(0,'#1e3010');grd.addColorStop(.7,'#162408');grd.addColorStop(1,'#0d1a08');
+  ctx.beginPath();ctx.arc(cx,cy,R+55,0,Math.PI*2);ctx.fillStyle=grd;ctx.fill();
 
-  // Tactical grid
-  ctx.strokeStyle='rgba(60,110,30,.2)'; ctx.lineWidth=1;
+  // Grid
+  ctx.strokeStyle='rgba(60,110,30,.2)';ctx.lineWidth=1;
   for(let r=R*.3;r<=R+1;r+=R*.3){ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();}
-  for(let i=0;i<12;i++){
-    const a=(i/12)*Math.PI*2;
-    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*(R+1),cy+Math.sin(a)*(R+1));ctx.stroke();
-  }
+  for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*(R+1),cy+Math.sin(a)*(R+1));ctx.stroke();}
 
   // Trees
   for(const t of trees){
-    ctx.beginPath();ctx.ellipse(t.x+4,t.y+6,t.r*.65,t.r*.32,0,0,Math.PI*2);
-    ctx.fillStyle='rgba(0,0,0,.3)';ctx.fill();
-    ctx.beginPath();ctx.arc(t.x,t.y,t.r*.3,0,Math.PI*2);
-    ctx.fillStyle='hsl(25,35%,16%)';ctx.fill();
-    ctx.beginPath();ctx.arc(t.x,t.y-t.r*.25,t.r,0,Math.PI*2);
-    ctx.fillStyle=`hsl(${t.hue},52%,${Math.floor(t.lum*100)}%)`;ctx.fill();
-    ctx.beginPath();ctx.arc(t.x-t.r*.28,t.y-t.r*.12,t.r*.68,0,Math.PI*2);
-    ctx.fillStyle=`hsl(${t.hue+8},56%,${Math.floor((t.lum+.04)*100)}%)`;ctx.fill();
+    ctx.beginPath();ctx.ellipse(t.x+4,t.y+6,t.r*.65,t.r*.32,0,0,Math.PI*2);ctx.fillStyle='rgba(0,0,0,.3)';ctx.fill();
+    ctx.beginPath();ctx.arc(t.x,t.y,t.r*.3,0,Math.PI*2);ctx.fillStyle='hsl(25,35%,16%)';ctx.fill();
+    ctx.beginPath();ctx.arc(t.x,t.y-t.r*.25,t.r,0,Math.PI*2);ctx.fillStyle=`hsl(${t.hue},52%,${Math.floor(t.lum*100)}%)`;ctx.fill();
+    ctx.beginPath();ctx.arc(t.x-t.r*.28,t.y-t.r*.12,t.r*.68,0,Math.PI*2);ctx.fillStyle=`hsl(${t.hue+8},56%,${Math.floor((t.lum+.04)*100)}%)`;ctx.fill();
   }
 
-  // Arena edge vignette
-  const ev=ctx.createRadialGradient(cx,cy,R-10,cx,cy,R+30);
-  ev.addColorStop(0,'rgba(0,0,0,0)');ev.addColorStop(1,'rgba(0,0,0,.55)');
+  // Vignette
+  const ev=ctx.createRadialGradient(cx,cy,R-10,cx,cy,R+30);ev.addColorStop(0,'rgba(0,0,0,0)');ev.addColorStop(1,'rgba(0,0,0,.55)');
   ctx.beginPath();ctx.arc(cx,cy,R+30,0,Math.PI*2);ctx.fillStyle=ev;ctx.fill();
 
-  // ── Enemies ── (draw OVER ground, UNDER outpost center)
+  // ── Enemies ──
   for(const e of enemies){
-    if(e.dead) continue;
+    if(e.dead)continue;
     const bobY=Math.sin(e.bobT)*2;
-    ctx.save(); ctx.translate(e.x,e.y+bobY); ctx.rotate(e.angle+Math.PI/2);
-
-    // Shadow
-    ctx.beginPath();ctx.ellipse(0,e.r*.55,e.r*.65,e.r*.28,0,0,Math.PI*2);
-    ctx.fillStyle='rgba(0,0,0,.38)';ctx.fill();
-
-    // HP bar
+    ctx.save();ctx.translate(e.x,e.y+bobY);ctx.rotate(e.angle+Math.PI/2);
+    ctx.beginPath();ctx.ellipse(0,e.r*.55,e.r*.65,e.r*.28,0,0,Math.PI*2);ctx.fillStyle='rgba(0,0,0,.38)';ctx.fill();
     const bw=e.r*2.4;
     ctx.fillStyle='rgba(0,0,0,.65)';ctx.fillRect(-bw/2,-e.r-11,bw,5);
-    ctx.fillStyle=e.hp/e.maxHp>.5?'#55cc15':'#ff4400';
-    ctx.fillRect(-bw/2,-e.r-11,bw*(e.hp/e.maxHp),5);
-
+    ctx.fillStyle=e.hp/e.maxHp>.5?'#55cc15':'#ff4400';ctx.fillRect(-bw/2,-e.r-11,bw*(e.hp/e.maxHp),5);
     const fl=e.hitFlash>0;
-    // Body
     if(e.type==='giant'){
-      ctx.fillStyle=fl?'#ff9966':'#2a1a0a';
-      poly(6,e.r*.9); ctx.fill();
-      ctx.strokeStyle='#4a2a10';ctx.lineWidth=2;ctx.stroke();
+      ctx.fillStyle=fl?'#ff9966':'#2a1a0a';poly(6,e.r*.9);ctx.fill();ctx.strokeStyle='#4a2a10';ctx.lineWidth=2;ctx.stroke();
     } else if(e.type==='brute'){
-      ctx.fillStyle=fl?'#ff8866':'#443322';
-      ctx.fillRect(-e.r*.72,-e.r*.85,e.r*1.44,e.r*1.6);
-      ctx.strokeStyle='#2a1a0a';ctx.lineWidth=1.5;
-      ctx.strokeRect(-e.r*.72,-e.r*.85,e.r*1.44,e.r*1.6);
+      ctx.fillStyle=fl?'#ff8866':'#443322';ctx.fillRect(-e.r*.72,-e.r*.85,e.r*1.44,e.r*1.6);ctx.strokeStyle='#2a1a0a';ctx.lineWidth=1.5;ctx.strokeRect(-e.r*.72,-e.r*.85,e.r*1.44,e.r*1.6);
+    } else if(e.type==='sniper'){
+      ctx.fillStyle=fl?'#88aaff':'#223355';ctx.beginPath();ctx.ellipse(0,0,e.r*.6,e.r*.85,0,0,Math.PI*2);ctx.fill();
+    } else if(e.type==='specter'){
+      ctx.globalAlpha=.7;ctx.fillStyle=fl?'#aaffaa':'#334433';poly(6,e.r*.9,Math.PI/6);ctx.fill();ctx.globalAlpha=1;
     } else {
-      ctx.fillStyle=fl?'#ff7766':e.col;
-      ctx.beginPath();ctx.ellipse(0,0,e.r*.68,e.r*.88,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=fl?'#ff7766':e.col;ctx.beginPath();ctx.ellipse(0,0,e.r*.68,e.r*.88,0,0,Math.PI*2);ctx.fill();
     }
-    // Head
-    ctx.fillStyle=fl?'#ffbbaa':e.type==='runner'?'#884422':e.type==='giant'?'#3a2010':'#3a5020';
-    ctx.beginPath();ctx.arc(0,-e.r*.75,e.r*.44,0,Math.PI*2);ctx.fill();
-    // Eyes
+    ctx.fillStyle=fl?'#ffbbaa':'#3a5020';ctx.beginPath();ctx.arc(0,-e.r*.75,e.r*.44,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#ff2200';
     ctx.beginPath();ctx.arc(-e.r*.15,-e.r*.8,2.4,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.arc( e.r*.15,-e.r*.8,2.4,0,Math.PI*2);ctx.fill();
-    // Arms
+    ctx.beginPath();ctx.arc(e.r*.15,-e.r*.8,2.4,0,Math.PI*2);ctx.fill();
     ctx.strokeStyle=fl?'#ff9988':e.col;ctx.lineWidth=e.r*.32;
     ctx.beginPath();ctx.moveTo(-e.r*.58,0);ctx.lineTo(-e.r*1.05,e.r*.48);ctx.stroke();
-    ctx.beginPath();ctx.moveTo( e.r*.58,0);ctx.lineTo( e.r*1.05,e.r*.48);ctx.stroke();
-
-    ctx.restore();
-  }
-
-  // ── Particles ──
-  for(const p of particles){
-    const t=p.life/p.maxLife;
-    if(p.ring){
-      ctx.strokeStyle=p.col;ctx.lineWidth=2.5*t;ctx.globalAlpha=t*.8;
-      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;
-    } else {
-      ctx.globalAlpha=t*.88;ctx.fillStyle=p.col;
-      ctx.beginPath();ctx.arc(p.x,p.y,p.r*t+.5,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+    ctx.beginPath();ctx.moveTo(e.r*.58,0);ctx.lineTo(e.r*1.05,e.r*.48);ctx.stroke();
+    // 스나이퍼 조준선
+    if(e.type==='sniper'){
+      ctx.restore();ctx.save();ctx.translate(e.x,e.y+bobY);
+      const sa=Math.atan2(cy-e.y,cx-e.x);
+      ctx.strokeStyle='rgba(68,136,255,.25)';ctx.lineWidth=1;ctx.setLineDash([4,6]);
+      ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(sa)*dist,Math.sin(sa)*dist);ctx.stroke();ctx.setLineDash([]);
     }
-  }
-
-  // ══ OUTPOST DRAW ══════════════════════════════════════════
-  ctx.save(); ctx.translate(cx,cy);
-
-  // Drop shadow
-  ctx.beginPath();ctx.ellipse(6,10,36,14,0,0,Math.PI*2);
-  ctx.fillStyle='rgba(0,0,0,.5)';ctx.fill();
-
-  // ── Base slab (octagon, gray concrete) ──
-  ctx.save(); ctx.rotate(outpostRot);
-  poly(8,30);
-  ctx.fillStyle='#4e4e46';ctx.fill();
-  ctx.strokeStyle='#2e2e28';ctx.lineWidth=3;ctx.stroke();
-  // bevel
-  poly(8,28);
-  ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=1;ctx.stroke();
-  ctx.restore();
-
-  // ── Lower tower body (octagon, tan/khaki) ──
-  ctx.save(); ctx.rotate(outpostRot);
-  poly(8,22);
-  const bodyG=ctx.createLinearGradient(-22,-22,22,22);
-  bodyG.addColorStop(0,'#d4c898');bodyG.addColorStop(1,'#8a7848');
-  ctx.fillStyle=bodyG;ctx.fill();
-  ctx.strokeStyle='#5a4e28';ctx.lineWidth=2;ctx.stroke();
-  // panel seam lines
-  ctx.strokeStyle='rgba(0,0,0,.2)';ctx.lineWidth=1;
-  for(let i=0;i<8;i++){
-    const a=(i/8)*Math.PI*2+outpostRot*0; // static seams
-    ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(a)*22,Math.sin(a)*22);ctx.stroke();
-  }
-  ctx.restore();
-
-  // Access door (bottom face)
-  ctx.fillStyle='#3a3228';
-  ctx.fillRect(-5,6,10,14);
-  ctx.strokeStyle='#1e1a10';ctx.lineWidth=1;ctx.strokeRect(-5,6,10,14);
-  ctx.fillStyle='rgba(0,80,40,.7)';
-  ctx.shadowColor='#00ff88';ctx.shadowBlur=3;
-  ctx.fillRect(-3,7,6,5);ctx.shadowBlur=0;
-  ctx.fillStyle='#777';ctx.fillRect(2,13,2,4); // handle
-
-  // ── Observation deck (HEXAGON — clearly visible) ──
-  // offset upward to simulate stacked layers
-  ctx.save(); ctx.translate(0,-12); ctx.rotate(outpostRot);
-
-  // Hex deck body
-  poly(6,19);
-  const deckG=ctx.createLinearGradient(-19,-19,19,12);
-  deckG.addColorStop(0,'#e8daa8');deckG.addColorStop(1,'#907848');
-  ctx.fillStyle=deckG;ctx.fill();
-  ctx.strokeStyle='#5a4828';ctx.lineWidth=2.5;ctx.stroke();
-
-  // Hex edge highlight
-  poly(6,17);
-  ctx.strokeStyle='rgba(255,255,255,.15)';ctx.lineWidth=1;ctx.stroke();
-
-  // 6 observation slits — small rects on each face midpoint
-  for(let i=0;i<6;i++){
-    const a=(i/6)*Math.PI*2+Math.PI/6;
-    const mx=Math.cos(a)*16,my=Math.sin(a)*16;
-    ctx.save();ctx.translate(mx,my);ctx.rotate(a);
-    ctx.fillStyle='rgba(0,100,50,.85)';
-    ctx.shadowColor='#00ee88';ctx.shadowBlur=4;
-    ctx.fillRect(-3,-2,6,4);
-    ctx.shadowBlur=0;
-    ctx.strokeStyle='#222';ctx.lineWidth=.6;ctx.strokeRect(-3,-2,6,4);
     ctx.restore();
   }
 
-  // Hex top face (flat top color)
-  poly(6,10);
-  ctx.fillStyle='#b8aa70';ctx.fill();
-  ctx.strokeStyle='#6a5a30';ctx.lineWidth=1.5;ctx.stroke();
-
-  ctx.restore(); // deck
-
-  // ── Antenna (right side) ──
-  ctx.strokeStyle='#252525';ctx.lineWidth=3;
-  ctx.beginPath();ctx.moveTo(15,-4);ctx.lineTo(15,-40);ctx.stroke();
-  ctx.lineWidth=1.5;
-  ctx.beginPath();ctx.moveTo(10,-32);ctx.lineTo(20,-32);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(11,-26);ctx.lineTo(19,-26);ctx.stroke();
-  ctx.beginPath();ctx.arc(15,-42,5,0,Math.PI*2);
-  ctx.fillStyle='#1a1a1a';ctx.shadowColor='#ff4400';ctx.shadowBlur=10;
-  ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle='#444';ctx.lineWidth=1;ctx.stroke();
-
-  // ── Turret base (on top of hex deck) ──
-  ctx.translate(0,-12);
-  ctx.beginPath();ctx.arc(0,0,10,0,Math.PI*2);
-  ctx.fillStyle='#252525';ctx.fill();
-  ctx.strokeStyle='#444';ctx.lineWidth=1.5;ctx.stroke();
-  ctx.beginPath();ctx.arc(0,0,8,0,Math.PI*2);
-  ctx.strokeStyle='#333';ctx.lineWidth=1;ctx.stroke();
-
-  // ── Turret barrel ──
-  ctx.save();ctx.rotate(turretAngle);
-  // mount box
-  ctx.fillStyle='#1c1c1c';ctx.fillRect(-6,-5,10,10);
-  ctx.strokeStyle='#3a3a3a';ctx.lineWidth=1;ctx.strokeRect(-6,-5,10,10);
-  // double barrel
-  ctx.fillStyle='#161616';
-  ctx.fillRect(2,-5,26,4);ctx.fillRect(2,1,26,4);
-  // shroud
-  ctx.fillStyle='#222';ctx.fillRect(2,-5.5,8,11);
-  // muzzle
-  ctx.fillStyle='#101010';ctx.fillRect(24,-5,4,4);ctx.fillRect(24,1,4,4);
-  // sight
-  ctx.fillStyle='#2e2e2e';ctx.fillRect(3,-7,6,4);
-  // pivot dot
-  ctx.beginPath();ctx.arc(0,0,4,0,Math.PI*2);ctx.fillStyle='#2e2e2e';ctx.fill();
-  ctx.beginPath();ctx.arc(0,0,2.2,0,Math.PI*2);
-  ctx.fillStyle='#ff3300';ctx.shadowColor='#ff3300';ctx.shadowBlur=5;ctx.fill();ctx.shadowBlur=0;
-  ctx.restore();
-
-  // ── Shield ring ──
-  if(shieldActive){
-    ctx.beginPath();ctx.arc(0,0,38,0,Math.PI*2);
-    ctx.strokeStyle=`rgba(68,136,255,${.5+Math.sin(Date.now()*.01)*.3})`;
-    ctx.lineWidth=4;ctx.stroke();
-  }
-
-  ctx.restore(); // outpost translate
-
-  // ── Bullets ──
-  for(const b of bullets){
-    ctx.shadowColor='#ffcc00';ctx.shadowBlur=8;
-    ctx.fillStyle=frenzyActive?'#ff6600':'#ffe566';
-    ctx.beginPath();ctx.arc(b.x,b.y,4.5,0,Math.PI*2);ctx.fill();
+  // Enemy bullets
+  for(const b of enemyBullets){
+    ctx.shadowColor=b.col;ctx.shadowBlur=6;
+    ctx.fillStyle=b.col;ctx.beginPath();ctx.arc(b.x,b.y,4,0,Math.PI*2);ctx.fill();
   }
   ctx.shadowBlur=0;
 
-  // Aim line
+  // Particles
+  for(const p of particles){
+    const t=p.life/p.maxLife;
+    if(p.ring){ctx.strokeStyle=p.col;ctx.lineWidth=2.5*t;ctx.globalAlpha=t*.8;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;}
+    else{ctx.globalAlpha=t*.88;ctx.fillStyle=p.col;ctx.beginPath();ctx.arc(p.x,p.y,p.r*t+.5,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
+  }
+
+  // ══ OUTPOST ══
+  ctx.save();ctx.translate(cx,cy);
+  ctx.beginPath();ctx.ellipse(6,10,36,14,0,0,Math.PI*2);ctx.fillStyle='rgba(0,0,0,.5)';ctx.fill();
+
+  // 베이스 슬랩
+  ctx.save();ctx.rotate(outpostRot);poly(8,30);ctx.fillStyle='#4e4e46';ctx.fill();ctx.strokeStyle='#2e2e28';ctx.lineWidth=3;ctx.stroke();ctx.restore();
+
+  // 하부 타워
+  ctx.save();ctx.rotate(outpostRot);poly(8,22);
+  const bg=ctx.createLinearGradient(-22,-22,22,22);bg.addColorStop(0,'#d4c898');bg.addColorStop(1,'#8a7848');
+  ctx.fillStyle=bg;ctx.fill();ctx.strokeStyle='#5a4e28';ctx.lineWidth=2;ctx.stroke();ctx.restore();
+
+  // 도어
+  ctx.fillStyle='#3a3228';ctx.fillRect(-5,6,10,14);ctx.strokeStyle='#1e1a10';ctx.lineWidth=1;ctx.strokeRect(-5,6,10,14);
+  ctx.fillStyle='rgba(0,80,40,.7)';ctx.shadowColor='#00ff88';ctx.shadowBlur=3;ctx.fillRect(-3,7,6,5);ctx.shadowBlur=0;
+  ctx.fillStyle='#777';ctx.fillRect(2,13,2,4);
+
+  // 육각 덱
+  ctx.save();ctx.translate(0,-12);ctx.rotate(outpostRot);
+  poly(6,19);
+  const dg=ctx.createLinearGradient(-19,-19,19,12);dg.addColorStop(0,'#e8daa8');dg.addColorStop(1,'#907848');
+  ctx.fillStyle=dg;ctx.fill();ctx.strokeStyle='#5a4828';ctx.lineWidth=2.5;ctx.stroke();
+  poly(6,17);ctx.strokeStyle='rgba(255,255,255,.15)';ctx.lineWidth=1;ctx.stroke();
+  for(let i=0;i<6;i++){
+    const a=(i/6)*Math.PI*2+Math.PI/6,mx=Math.cos(a)*16,my=Math.sin(a)*16;
+    ctx.save();ctx.translate(mx,my);ctx.rotate(a);
+    ctx.fillStyle='rgba(0,100,50,.85)';ctx.shadowColor='#00ee88';ctx.shadowBlur=4;ctx.fillRect(-3,-2,6,4);ctx.shadowBlur=0;
+    ctx.strokeStyle='#222';ctx.lineWidth=.6;ctx.strokeRect(-3,-2,6,4);ctx.restore();
+  }
+  poly(6,10);ctx.fillStyle='#b8aa70';ctx.fill();ctx.strokeStyle='#6a5a30';ctx.lineWidth=1.5;ctx.stroke();
+  ctx.restore();
+
+  // 안테나
+  ctx.strokeStyle='#252525';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(15,-4);ctx.lineTo(15,-40);ctx.stroke();
+  ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(10,-32);ctx.lineTo(20,-32);ctx.stroke();ctx.beginPath();ctx.moveTo(11,-26);ctx.lineTo(19,-26);ctx.stroke();
+  ctx.beginPath();ctx.arc(15,-42,5,0,Math.PI*2);ctx.fillStyle='#1a1a1a';ctx.shadowColor='#ff4400';ctx.shadowBlur=10;ctx.fill();ctx.shadowBlur=0;
+  ctx.strokeStyle='#444';ctx.lineWidth=1;ctx.stroke();
+
+  // 포탑 베이스
+  ctx.translate(0,-12);
+  ctx.beginPath();ctx.arc(0,0,10,0,Math.PI*2);ctx.fillStyle='#252525';ctx.fill();ctx.strokeStyle='#444';ctx.lineWidth=1.5;ctx.stroke();
+
+  // 포탑
+  ctx.save();ctx.rotate(turretAngle);
+  ctx.fillStyle='#1c1c1c';ctx.fillRect(-6,-5,10,10);ctx.strokeStyle='#3a3a3a';ctx.lineWidth=1;ctx.strokeRect(-6,-5,10,10);
+  ctx.fillStyle='#161616';ctx.fillRect(2,-5,26,4);ctx.fillRect(2,1,26,4);
+  ctx.fillStyle='#222';ctx.fillRect(2,-5.5,8,11);
+  ctx.fillStyle='#101010';ctx.fillRect(24,-5,4,4);ctx.fillRect(24,1,4,4);
+  ctx.fillStyle='#2e2e2e';ctx.fillRect(3,-7,6,4);
+  ctx.beginPath();ctx.arc(0,0,4,0,Math.PI*2);ctx.fillStyle='#2e2e2e';ctx.fill();
+  ctx.beginPath();ctx.arc(0,0,2.2,0,Math.PI*2);ctx.fillStyle='#ff3300';ctx.shadowColor='#ff3300';ctx.shadowBlur=5;ctx.fill();ctx.shadowBlur=0;
+  ctx.restore();
+
+  // 방어막
+  if(shieldActive){
+    ctx.beginPath();ctx.arc(0,0,40,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(68,136,255,${.5+Math.sin(Date.now()*.01)*.3})`;ctx.lineWidth=4;ctx.stroke();
+  }
+  ctx.restore();
+
+  // Player bullets
+  ctx.shadowColor='#ffcc00';ctx.shadowBlur=8;
+  for(const b of bullets){
+    ctx.fillStyle=frenzyActive?'#ff6600':'#ffe566';ctx.beginPath();ctx.arc(b.x,b.y,4.5,0,Math.PI*2);ctx.fill();
+  }
+  ctx.shadowBlur=0;
+
+  // Aim line (X비율 기반 각도 표시)
   if(touchX!==null&&!isReloading&&currentTab==='fire'){
     ctx.strokeStyle='rgba(255,210,50,.12)';ctx.lineWidth=1;ctx.setLineDash([6,10]);
-    ctx.beginPath();ctx.moveTo(cx,cy);
-    ctx.lineTo(cx+Math.cos(turretAngle)*R*.9,cy+Math.sin(turretAngle)*R*.9);
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(turretAngle)*R*.88,cy+Math.sin(turretAngle)*R*.88);
     ctx.stroke();ctx.setLineDash([]);
   }
 
-  ctx.restore(); // shake
+  // Floating gold texts
+  ctx.font='bold 13px Courier New';ctx.textAlign='center';
+  for(const ft of floatingTexts){
+    const t=ft.life/ft.maxLife;
+    ctx.globalAlpha=t;ctx.fillStyle='#ffdd00';
+    ctx.shadowColor='#ff8800';ctx.shadowBlur=6;
+    ctx.fillText(ft.text,ft.x,ft.y);
+  }
+  ctx.globalAlpha=1;ctx.shadowBlur=0;ctx.textAlign='left';
+
+  ctx.restore();
 }
 
 // ── KILL ─────────────────────────────────────────────────────
@@ -903,62 +858,56 @@ function killEnemy(idx){
   const e=enemies[idx]; e.dead=true;
   spawnParticles(e.x,e.y,'#882200',10,110,.5);
   spawnParticles(e.x,e.y,'#cc4400',5,75,.32);
-  sfx('die'); screenShake=Math.max(screenShake,e.type==='giant'?8:4);
+  sfx('die');screenShake=Math.max(screenShake,e.type==='giant'?8:4);
+  // 골드 드롭
+  const gd=ENEMY_TYPES[e.type]?.goldDrop||3;
+  gold+=gd; spawnGoldText(e.x,e.y,gd);
   enemies.splice(idx,1);
-  kills++; enemiesLeft--; updateHUD(); killMsg(e.type);
-  if(enemiesLeft<=0&&waveActive) onWaveClear();
+  kills++;enemiesLeft--;updateHUD();killMsg(e.type);
+  if(enemiesLeft<=0&&waveActive)onWaveClear();
 }
 
 // ── GAME FLOW ────────────────────────────────────────────────
 window.startGame=function(){
   document.getElementById('overlay').style.display='none';
-  hp=CFG.OUTPOST_HP; kills=0; ammo=CFG.MAX_AMMO; gold=0;
-  waveIdx=0; enemiesLeft=0; waveActive=false;
-  bullets=[]; enemies=[]; particles=[];
-  isReloading=false; screenShake=0; lastFire=0;
-  frenzyActive=false; shieldActive=false;
+  hp=CFG.OUTPOST_HP;kills=0;ammo=CFG.MAX_AMMO;gold=0;
+  waveIdx=0;enemiesLeft=0;waveActive=false;
+  bullets=[];enemies=[];particles=[];floatingTexts=[];enemyBullets=[];
+  isReloading=false;screenShake=0;lastFire=0;
+  frenzyActive=false;shieldActive=false;
   upgradeLevel={};
-  // Reset upgradeable CFG
-  CFG.BULLET_DMG=14; CFG.FIRE_RATE_MS=220; CFG.MAX_AMMO=20;
-  CFG.RELOAD_MS=1800; CFG.BULLET_SPEED=480; CFG.OUTPOST_HP=100;
+  CFG.BULLET_DMG=14;CFG.FIRE_RATE_MS=200;CFG.MAX_AMMO=20;
+  CFG.RELOAD_MS=1800;CFG.BULLET_SPEED=480;CFG.OUTPOST_HP=100;
   SKILLS.forEach(s=>{s.unlocked=false;s.cdLeft=0;});
-  gameRunning=true; lastTime=performance.now();
-  document.getElementById('goldHud').style.display='block';
-  updateHUD(); buildAmmoBar(); buildSkillBar(); setTab('fire');
+  gameRunning=true;lastTime=performance.now();
+  updateHUD();buildAmmoBar();buildSkillBar();setTab('fire');
   cancelAnimationFrame(raf);
   raf=requestAnimationFrame(loop);
   setTimeout(startWave,800);
 };
-
 function gameOver(){
   gameRunning=false;
   showOverlay('OUTPOST LOST','#ff4444',
-    `<div class="sgrid">
-      <div class="sbox"><div class="sl">WAVE</div><div class="sv">${waveIdx+1}</div></div>
-      <div class="sbox"><div class="sl">KILLS</div><div class="sv">${kills}</div></div>
-    </div>
+    `<div class="sgrid"><div class="sbox"><div class="sl">WAVE</div><div class="sv">${waveIdx+1}</div></div><div class="sbox"><div class="sl">KILLS</div><div class="sv">${kills}</div></div></div>
     <button class="btn" onclick="startGame()">↺ RETRY</button>`);
 }
 function winGame(){
   gameRunning=false;
   showOverlay('MISSION COMPLETE','#b8ff50',
     `<div style="color:rgba(255,255,255,.4);font-size:10px;letter-spacing:2px;margin:6px 0">ALL 10 WAVES CLEARED</div>
-    <div class="sgrid">
-      <div class="sbox"><div class="sl">KILLS</div><div class="sv">${kills}</div></div>
-      <div class="sbox"><div class="sl">HP</div><div class="sv">${hp}</div></div>
-    </div>
+    <div class="sgrid"><div class="sbox"><div class="sl">KILLS</div><div class="sv">${kills}</div></div><div class="sbox"><div class="sl">GOLD</div><div class="sv">${gold}</div></div></div>
     <button class="btn" onclick="startGame()">▶ PLAY AGAIN</button>`);
 }
 function showOverlay(title,col,body){
   const ov=document.getElementById('overlay');
   ov.innerHTML=`<h1 style="color:${col};text-shadow:0 0 30px ${col}">${title}</h1>${body}`;
-  ov.style.display='flex';
+  ov.style.display='flex';ov.style.flexDirection='column';ov.style.alignItems='center';ov.style.justifyContent='center';
 }
 
 // ── INIT ─────────────────────────────────────────────────────
 window.addEventListener('load',()=>{
-  resize(); window.addEventListener('resize',resize);
-  setupInput(); buildAmmoBar();
+  resize();window.addEventListener('resize',resize);
+  setupInput();buildAmmoBar();
   draw();
 });
 </script>
