@@ -396,9 +396,9 @@ const OUTPOST_UPGRADES=[
 
 // ── 스킬 ─────────────────────────────────────────────────────
 const SKILLS=[
-  {id:'airstrike',icon:'✈️',name:'공습',    desc:'전체 적 폭격',    cost:80,cooldown:25,unlocked:false,cdLeft:0,activate:doAirstrike},
-  {id:'frenzy',   icon:'🔥',name:'광란사격', desc:'5초 무한탄 2배속', cost:60,cooldown:30,unlocked:false,cdLeft:0,activate:doFrenzy},
-  {id:'shield',   icon:'🔰',name:'방어막',   desc:'5초 피해 무효',   cost:70,cooldown:35,unlocked:false,cdLeft:0,activate:doShield},
+  {id:'airstrike',icon:'✈️',name:'공습',    desc:'전체 적 폭격',    cost:80,cooldown:25,unlocked:false,cdLeft:0},
+  {id:'frenzy',   icon:'🔥',name:'광란사격', desc:'5초 무한탄 2배속', cost:60,cooldown:30,unlocked:false,cdLeft:0},
+  {id:'shield',   icon:'🔰',name:'방어막',   desc:'5초 피해 무효',   cost:70,cooldown:35,unlocked:false,cdLeft:0},
 ];
 
 // ── CFG ──────────────────────────────────────────────────────
@@ -489,8 +489,14 @@ function updateSkillBar(dt){
   });
 }
 function activateSkill(idx){
-  const sk=SKILLS[idx];if(!sk||!sk.unlocked||sk.cdLeft>0)return;
-  sk.cdLeft=sk.cooldown;sk.activate();buildSkillBar();
+  const sk=SKILLS[idx];
+  if(!sk||!sk.unlocked||sk.cdLeft>0)return;
+  sk.cdLeft=sk.cooldown;
+  // ID 기반 디스패치 (함수 참조 호이스팅 문제 회피)
+  if(sk.id==='airstrike') doAirstrike();
+  else if(sk.id==='frenzy')   doFrenzy();
+  else if(sk.id==='shield')   doShield();
+  buildSkillBar();
 }
 function updateWeaponHud(){
   const d=getCurDef(),w=getCurWeapon();
