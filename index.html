@@ -50,13 +50,27 @@ canvas{display:block;position:fixed;top:0;left:0;}
 .mTab .ti{font-size:17px;}
 .mTab .tl{color:#90ee40;font-size:8px;letter-spacing:1px;margin-top:2px;}
 
-/* 수동 재장전 버튼 */
-#reloadBtn{width:64px;height:72px;border-radius:6px;background:rgba(255,150,0,.12);
-  border:1px solid rgba(255,150,0,.4);display:flex;flex-direction:column;
-  align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;}
-#reloadBtn .ti{font-size:18px;}
-#reloadBtn .tl{color:#ffaa00;font-size:8px;letter-spacing:1px;margin-top:2px;}
-#reloadBtn.reloading{opacity:.4;pointer-events:none;}
+/* 원형 재장전 버튼 */
+#reloadCircle{
+  position:fixed; bottom:96px; left:50%; transform:translateX(-50%);
+  width:72px; height:72px; border-radius:50%;
+  background:rgba(8,14,6,.95);
+  cursor:pointer; z-index:21; -webkit-tap-highlight-color:transparent;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  border: 2px solid rgba(100,200,60,.3);
+}
+#reloadCircle .rIcon{font-size:22px; line-height:1;}
+#reloadCircle .rName{color:#b8ff50;font-size:7px;letter-spacing:1px;margin-top:1px;text-align:center;max-width:60px;overflow:hidden;white-space:nowrap;}
+#reloadCircle canvas{position:absolute;top:0;left:0;pointer-events:none;}
+/* 웨이브 카운트다운 */
+#waveCountdown{
+  position:fixed; top:58px; left:50%; transform:translateX(-50%);
+  background:rgba(0,0,0,.8); border:1px solid rgba(255,150,0,.5);
+  border-radius:8px; padding:5px 16px;
+  color:#ffaa00; font-size:12px; letter-spacing:2px;
+  z-index:15; pointer-events:none; display:none; text-align:center;
+  white-space:nowrap;
+}
 
 /* 패널 */
 #panel{position:fixed;bottom:92px;left:0;right:0;background:rgba(6,10,4,.97);
@@ -135,12 +149,16 @@ canvas{display:block;position:fixed;top:0;left:0;}
 <div id="banner"></div>
 <div id="killfeed"></div>
 
+<!-- 원형 재장전 버튼 (메뉴 위에 플로팅) -->
+<div id="reloadCircle" onclick="manualReload()">
+  <canvas id="reloadRingCanvas" width="72" height="72"></canvas>
+  <div class="rIcon" id="rcIcon">🔫</div>
+  <div class="rName" id="rcName">MACHINE GUN</div>
+</div>
+<div id="waveCountdown"></div>
 <div id="menu">
   <div class="mTab active" id="tabFire" onclick="setTab('fire')">
     <div class="ti">🎯</div><div class="tl">FIRE</div>
-  </div>
-  <div id="reloadBtn" onclick="manualReload()">
-    <div class="ti">🔄</div><div class="tl">RELOAD</div>
   </div>
   <div class="mTab" id="tabUpgrade" onclick="setTab('upgrade')">
     <div class="ti">⚙️</div><div class="tl">UPGRADE</div>
@@ -398,15 +416,32 @@ function updateWeaponHud(){
   const d=getCurDef(),w=getCurWeapon();
   document.getElementById('weaponIcon').textContent=d.icon;
   document.getElementById('weaponName').textContent=d.name;
-  const fill=document.getElementById('reloadFill');
+  // 원형 버튼 아이콘/이름
+  document.getElementById('rcIcon').textContent=d.icon;
+  document.getElementById('rcName').textContent=d.name;
+  // 원형 링 게이지
+  const rc=document.getElementById('reloadCircle');
+  const ringCanvas=document.getElementById('reloadRingCanvas');
+  const rctx=ringCanvas.getContext('2d');
+  const sz=72,cx2=sz/2,cy2=sz/2,rad=33,lw=4;
+  rctx.clearRect(0,0,sz,sz);
+  // 기본 링
+  rctx.beginPath();rctx.arc(cx2,cy2,rad,0,Math.PI*2);
+  rctx.strokeStyle='rgba(100,200,60,.2)';rctx.lineWidth=lw;rctx.stroke();
   if(w.isReloading){
     const pct=1-(w.reloadTimer/w.reload);
-    fill.style.width=(pct*100)+'%';fill.style.background='#ffaa00';
+    rctx.beginPath();rctx.arc(cx2,cy2,rad,-Math.PI/2,-Math.PI/2+Math.PI*2*pct);
+    rctx.strokeStyle='#ffaa00';rctx.lineWidth=lw;rctx.lineCap='round';rctx.stroke();
+    rc.style.opacity='0.7';
+  } else if(frenzyActive){
+    rctx.beginPath();rctx.arc(cx2,cy2,rad,0,Math.PI*2);
+    rctx.strokeStyle='#ff6600';rctx.lineWidth=lw;rctx.stroke();
+    rc.style.opacity='0.5';
   } else {
-    fill.style.width='100%';fill.style.background='rgba(100,200,60,.6)';
+    rctx.beginPath();rctx.arc(cx2,cy2,rad,0,Math.PI*2);
+    rctx.strokeStyle='rgba(144,238,64,.6)';rctx.lineWidth=lw;rctx.stroke();
+    rc.style.opacity='1';
   }
-  const rb=document.getElementById('reloadBtn');
-  rb.className=w.isReloading||frenzyActive?'reloading':'';
 }
 
 // ── HUD ──────────────────────────────────────────────────────
@@ -682,12 +717,28 @@ function startWave(){
     spawnEnemy(squads[spawned]);spawned++;
   },w.spawnMs);
 }
+let countdownTimer=null;
 function onWaveClear(){
   waveActive=false;const reward=WAVES[waveIdx].reward;
   gold+=reward;updateHUD();showBanner('WAVE CLEAR! +💰'+reward,'#b8ff50');
   waveIdx++;
-  if(waveIdx>=WAVES.length)setTimeout(winGame,1600);
-  else setTimeout(startWave,2800);
+  if(waveIdx>=WAVES.length){setTimeout(winGame,1600);return;}
+  // 10초 카운트다운
+  let remaining=10;
+  const cdEl=document.getElementById('waveCountdown');
+  cdEl.style.display='block';
+  cdEl.textContent='NEXT WAVE IN  '+remaining+'s';
+  clearInterval(countdownTimer);
+  countdownTimer=setInterval(()=>{
+    remaining--;
+    if(remaining<=0){
+      clearInterval(countdownTimer);
+      cdEl.style.display='none';
+      startWave();
+    } else {
+      cdEl.textContent='NEXT WAVE IN  '+remaining+'s';
+    }
+  },1000);
 }
 
 // ── MAIN LOOP ────────────────────────────────────────────────
@@ -1022,6 +1073,7 @@ window.startGame=function(){
   document.getElementById('overlay').style.display='none';
   CFG.OUTPOST_HP=100;CFG.regenPerWave=0;CFG.meleeDmgMul=1.0;
   hp=100;kills=0;gold=0;waveIdx=0;enemiesLeft=0;waveActive=false;
+  if(countdownTimer)clearInterval(countdownTimer);document.getElementById('waveCountdown').style.display='none';
   bullets=[];enemies=[];particles=[];floatingTexts=[];enemyBullets=[];
   screenShake=0;lastFire=0;frenzyActive=false;shieldActive=false;upgradeLevel={};
   SKILLS.forEach(s=>{s.unlocked=false;s.cdLeft=0;});
