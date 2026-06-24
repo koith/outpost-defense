@@ -106,10 +106,12 @@ canvas{display:block;position:fixed;top:0;left:0;}
 .upgradeRow .ulevel{color:rgba(100,200,60,.6);font-size:9px;margin-top:2px;}
 .upgradeRow .cost{color:#ffcc00;font-size:11px;font-weight:bold;flex-shrink:0;}
 
-#banner{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-  font-size:22px;font-weight:bold;letter-spacing:3px;color:#fff;
-  text-shadow:0 0 20px #ff6600;opacity:0;pointer-events:none;z-index:30;
-  transition:opacity .3s;text-align:center;}
+#banner{position:fixed;top:160px;left:50%;transform:translateX(-50%);
+  font-size:18px;font-weight:bold;letter-spacing:2px;color:#fff;
+  text-shadow:0 0 16px rgba(0,0,0,.8);opacity:0;pointer-events:none;z-index:30;
+  transition:opacity .3s;text-align:center;white-space:nowrap;
+  background:rgba(0,0,0,.65);border-radius:6px;padding:5px 14px;
+  border:1px solid rgba(255,255,255,.1);}
 #killfeed{position:fixed;top:68px;left:10px;z-index:10;pointer-events:none;}
 .km{background:rgba(0,0,0,.7);border-left:2px solid #ff4444;color:rgba(255,200,80,.9);
   font-size:9px;letter-spacing:1px;padding:2px 8px;border-radius:0 4px 4px 0;
@@ -220,8 +222,8 @@ const WEAPON_DEFS = {
   },
   laser: {
     icon:'⚡', name:'LASER CANNON', color:'#00ffff',
-    baseDmg:8,   baseRate:80,   baseAmmo:30,  baseReload:2000,
-    baseSpeed:900, upgradeCost:80, costMul:1.9, critChance:0.05, critMul:1.5, unlockCost:80,
+    baseDmg:8,   baseRate:160,  baseAmmo:22,  baseReload:2200,
+    baseSpeed:900, upgradeCost:80, costMul:1.9, critChance:0.03, critMul:1.5, unlockCost:80,
     desc:'관통 피해, 모든 적 통과',
     shoot(cx,cy,angle,state){
       const s=BULLET_START_R;
@@ -401,8 +403,8 @@ const SKILLS=[
 
 // ── CFG ──────────────────────────────────────────────────────
 const CFG={OUTPOST_HP:120,regenPerSec:0,meleeDmgMul:1.0};
-const OUTPOST_BLOCK_R=52;
-const BULLET_START_R=44;
+const OUTPOST_BLOCK_R=50;
+const BULLET_START_R=38; // 총알 발사 위치, 항상 OUTPOST_BLOCK_R보다 안쪽
 
 // ── STATE ────────────────────────────────────────────────────
 let W,H,cx,cy,R;
@@ -854,22 +856,33 @@ function startWave(){
   const newBiome=WAVES[waveIdx].biome||'jungle';
   const isBossWave=WAVES[waveIdx].hasBoss;
   if(newBiome!==currentBiome){
-    // 씬 전환 연출
     biomeTransitioning=true;
     const bm=BIOMES[newBiome];
-    const tr=document.createElement('div');
-    tr.id='biomeTransition';
-    tr.style.cssText=`position:fixed;inset:0;background:#000;z-index:150;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:'Courier New',monospace;opacity:0;transition:opacity .4s`;
-    tr.innerHTML=`<div style="font-size:32px;margin-bottom:12px">${bm.name.split(' ')[0]}</div>
-      <div style="font-size:20px;letter-spacing:4px;color:#b8ff50">${bm.name.replace(/^\S+\s/,'')}</div>
-      <div style="font-size:10px;letter-spacing:2px;color:rgba(255,255,255,.4);margin-top:10px">ENTERING NEW REGION</div>`;
-    document.body.appendChild(tr);
-    setTimeout(()=>tr.style.opacity='1',10);
-    setTimeout(()=>{
-      currentBiome=newBiome;buildTrees();
-      tr.style.opacity='0';
-      setTimeout(()=>{document.body.removeChild(tr);biomeTransitioning=false;actuallyStartWave(isBossWave);},400);
-    },1800);
+    // 씬 전환: 좌우 문 패널
+    const overlay=document.createElement('div');
+    overlay.style.cssText='position:fixed;inset:0;z-index:150;pointer-events:none;overflow:hidden';
+    // 왼쪽 패널
+    const L=document.createElement('div');
+    L.style.cssText='position:absolute;left:0;top:0;bottom:0;width:50%;background:#0a0a0a;transform:translateX(-100%);transition:transform 0.45s cubic-bezier(.4,0,.2,1)';
+    // 오른쪽 패널
+    const R=document.createElement('div');
+    R.style.cssText='position:absolute;right:0;top:0;bottom:0;width:50%;background:#0a0a0a;transform:translateX(100%);transition:transform 0.45s cubic-bezier(.4,0,.2,1)';
+    // 중앙 텍스트 (패널이 닫혔을 때만 보임)
+    const label=document.createElement('div');
+    label.style.cssText='position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:Courier New,monospace;opacity:0;transition:opacity 0.3s';
+    label.innerHTML=`<div style="font-size:38px;margin-bottom:10px">${bm.name.split(' ')[0]}</div>
+      <div style="font-size:18px;letter-spacing:6px;color:#b8ff50;text-transform:uppercase">${bm.name.replace(/^\S+\s/,'')}</div>
+      <div style="font-size:9px;letter-spacing:3px;color:rgba(255,255,255,.35);margin-top:12px">NEW REGION ENTERING</div>`;
+    overlay.appendChild(L);overlay.appendChild(R);overlay.appendChild(label);
+    document.body.appendChild(overlay);
+    // 1단계: 문 닫힘
+    setTimeout(()=>{ L.style.transform='translateX(0)'; R.style.transform='translateX(0)'; },10);
+    // 2단계: 텍스트 표시 + 배경 전환
+    setTimeout(()=>{ label.style.opacity='1'; currentBiome=newBiome; buildTrees(); },500);
+    // 3단계: 문 열림
+    setTimeout(()=>{ label.style.opacity='0'; L.style.transform='translateX(-100%)'; R.style.transform='translateX(100%)'; },2000);
+    // 4단계: 정리
+    setTimeout(()=>{ document.body.removeChild(overlay); biomeTransitioning=false; actuallyStartWave(isBossWave); },2500);
     return;
   }
   currentBiome=newBiome;
