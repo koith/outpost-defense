@@ -186,9 +186,9 @@ canvas{display:block;position:fixed;top:0;left:0;}
 const WEAPON_DEFS = {
   machinegun: {
     icon:'🔫', name:'MACHINE GUN', color:'#ffe566',
-    baseDmg:14,   baseRate:220,  baseAmmo:20,  baseReload:750,
-    baseSpeed:480, upgradeCost:40, costMul:1.6, critChance:0.08, critMul:1.8, unlockCost:0,
-    desc:'빠른 연사, 짧은 재장전',
+    baseDmg:12,   baseRate:240,  baseAmmo:18,  baseReload:1100,
+    baseSpeed:480, upgradeCost:50, costMul:1.8, critChance:0.07, critMul:1.6, unlockCost:0,
+    desc:'빠른 연사, 단일 타겟 특화',
     shoot(cx,cy,angle,state){
       // 단발 총알
       const s=BULLET_START_R;
@@ -204,14 +204,14 @@ const WEAPON_DEFS = {
   },
   bomb: {
     icon:'💣', name:'BOMB LAUNCHER', color:'#ff6600',
-    baseDmg:40,  baseRate:900,  baseAmmo:6,   baseReload:2400,
-    baseSpeed:300, upgradeCost:70, costMul:1.8, critChance:0.12, critMul:2.0, unlockCost:60,
-    desc:'폭발 범위 피해, 느린 연사',
+    baseDmg:55,  baseRate:1100, baseAmmo:5,   baseReload:2800,
+    baseSpeed:280, upgradeCost:70, costMul:1.8, critChance:0.15, critMul:2.2, unlockCost:60,
+    desc:'광역 폭발, 다수 처리 특화',
     shoot(cx,cy,angle,state){
       const s=BULLET_START_R;
       return [{x:cx+Math.cos(angle)*s,y:cy+Math.sin(angle)*s,
         vx:Math.cos(angle)*state.speed,vy:Math.sin(angle)*state.speed,
-        life:1.8,col:state.color,r:7,type:'bomb',dmg:state.dmg,splashR:55}];
+        life:1.8,col:state.color,r:8,type:'bomb',dmg:state.dmg,splashR:70}];
     },
     drawBullet(ctx,b){
       ctx.shadowColor='#ff4400';ctx.shadowBlur=12;
@@ -222,9 +222,9 @@ const WEAPON_DEFS = {
   },
   laser: {
     icon:'⚡', name:'LASER CANNON', color:'#00ffff',
-    baseDmg:8,   baseRate:160,  baseAmmo:22,  baseReload:2200,
-    baseSpeed:900, upgradeCost:80, costMul:1.9, critChance:0.03, critMul:1.5, unlockCost:80,
-    desc:'관통 피해, 모든 적 통과',
+    baseDmg:7,   baseRate:140,  baseAmmo:25,  baseReload:2400,
+    baseSpeed:950, upgradeCost:80, costMul:1.9, critChance:0.04, critMul:1.6, unlockCost:80,
+    desc:'관통 피해 — 줄 세운 적 전부 관통',
     shoot(cx,cy,angle,state){
       const s=BULLET_START_R;
       return [{x:cx+Math.cos(angle)*s,y:cy+Math.sin(angle)*s,
@@ -242,14 +242,14 @@ const WEAPON_DEFS = {
   },
   poison: {
     icon:'🏹', name:'POISON ARROW', color:'#88ff44',
-    baseDmg:6,   baseRate:350,  baseAmmo:15,  baseReload:1600,
-    baseSpeed:420, upgradeCost:60, costMul:1.7, critChance:0.20, critMul:2.5, unlockCost:50,
-    desc:'독 지속 피해 (3초)',
+    baseDmg:8,   baseRate:380,  baseAmmo:14,  baseReload:1800,
+    baseSpeed:420, upgradeCost:60, costMul:1.7, critChance:0.25, critMul:2.8, unlockCost:50,
+    desc:'독 지속피해 5초 + 높은 크리확률',
     shoot(cx,cy,angle,state){
       const s=BULLET_START_R;
       return [{x:cx+Math.cos(angle)*s,y:cy+Math.sin(angle)*s,
         vx:Math.cos(angle)*state.speed,vy:Math.sin(angle)*state.speed,
-        life:1.5,col:state.color,r:4,type:'poison',dmg:state.dmg,poisonDmg:state.dmg*.4,poisonDur:3}];
+        life:1.5,col:state.color,r:4,type:'poison',dmg:state.dmg,poisonDmg:state.dmg*.5,poisonDur:5}];
     },
     drawBullet(ctx,b){
       ctx.save();ctx.translate(b.x,b.y);ctx.rotate(Math.atan2(b.vy,b.vx));
@@ -262,14 +262,14 @@ const WEAPON_DEFS = {
   },
   slime: {
     icon:'🫧', name:'SLIME GUN', color:'#aaff00',
-    baseDmg:10,  baseRate:500,  baseAmmo:10,  baseReload:2800,
+    baseDmg:12,  baseRate:500,  baseAmmo:10,  baseReload:2800,
     baseSpeed:260, upgradeCost:65, costMul:1.75, critChance:0.15, critMul:2.2, unlockCost:70,
-    desc:'슬로우 효과 (50%, 2초)',
+    desc:'슬로우 3초 (50%) — 보스/브루트 특화',
     shoot(cx,cy,angle,state){
       const s=BULLET_START_R;
       return [{x:cx+Math.cos(angle)*s,y:cy+Math.sin(angle)*s,
         vx:Math.cos(angle)*state.speed,vy:Math.sin(angle)*state.speed,
-        life:2.0,col:state.color,r:8,type:'slime',dmg:state.dmg,slowDur:2,slowMul:.5}];
+        life:2.0,col:state.color,r:8,type:'slime',dmg:state.dmg,slowDur:3,slowMul:.45}];
     },
     drawBullet(ctx,b){
       const t=b.life/b.startLife||1;
@@ -680,12 +680,19 @@ function buyWeaponUpgrade(id){
   if(gold<cost){showBanner('골드 부족!','#ff4444');return;}
   gold-=cost;upgradeLevel['w_'+id]=lv+1;
   // 각 스탯 강화
-  w.dmg=Math.round(d.baseDmg*(1+lv*.25+.25));
-  w.rate=Math.max(50,Math.round(d.baseRate*(1-(lv*.08+.08))));
-  w.maxAmmo=Math.round(d.baseAmmo*(1+lv*.15+.15));
+  // 기관총은 성장폭 억제, 다른 무기는 기존 성장률
+  const isMG=(id==='machinegun');
+  const dmgGrowth=isMG?.18:.25;
+  const rateGrowth=isMG?.06:.08;
+  const ammoGrowth=isMG?.10:.15;
+  const reloadGrowth=isMG?.09:.12;
+  const newLv=lv+1;
+  w.dmg=Math.round(d.baseDmg*(1+newLv*dmgGrowth));
+  w.rate=Math.max(60,Math.round(d.baseRate*(1-(newLv*rateGrowth))));
+  w.maxAmmo=Math.round(d.baseAmmo*(1+newLv*ammoGrowth));
   w.ammo=Math.min(w.ammo+2,w.maxAmmo);
-  w.reload=Math.max(300,Math.round(d.baseReload*(1-(lv*.12+.12))));
-  w.speed=Math.round(d.baseSpeed*(1+lv*.08+.08));
+  w.reload=Math.max(400,Math.round(d.baseReload*(1-(newLv*reloadGrowth))));
+  w.speed=Math.round(d.baseSpeed*(1+newLv*.07));
   updateHUD();buildAmmoBar();updateAmmoBar();updateWeaponHud();renderUpgradePanel();
   showBanner(d.name+' 업그레이드!','#b8ff50');
 }
@@ -931,32 +938,29 @@ function actuallyStartWave(isBossWave){
     spawnEnemy(squads[spawned]);spawned++;
   },w.spawnMs);
 }
-let countdownTimer=null;
-let countdownRemaining=0;    // 현재 남은 초
-let countdownPaused=false;   // 일시정지 여부
+// 카운트다운: setInterval 대신 경과시간 누적 방식 (isPaused 시 완전 정지)
+let countdownRemaining=0;   // 남은 초 (정수)
+let countdownAccum=0;       // 누적 시간 (실수, 루프에서 dt 더함)
+let countdownActive=false;  // 진행 중 여부
 
-function pauseCountdown(){
-  if(countdownRemaining<=0)return;
-  countdownPaused=true;
-  clearInterval(countdownTimer);
-}
-function resumeCountdown(){
-  if(!countdownPaused||countdownRemaining<=0)return;
-  countdownPaused=false;
-  const cdEl=document.getElementById('waveCountdown');
-  const cdNum=document.getElementById('cdNum');
-  countdownTimer=setInterval(()=>{
-    if(isPaused)return; // 혹시 모를 이중 방어
+function pauseCountdown(){ /* 루프가 멈추면 자동 정지 — 별도 처리 불필요 */ }
+function resumeCountdown(){ /* 루프 재개 시 자동 재개 */ }
+// 루프에서 호출할 함수
+function tickCountdown(dt){
+  if(!countdownActive||countdownRemaining<=0)return;
+  countdownAccum+=dt;
+  if(countdownAccum>=1){
+    countdownAccum-=1;
     countdownRemaining--;
+    const cdNum=document.getElementById('cdNum');
+    if(cdNum)cdNum.textContent=countdownRemaining;
     if(countdownRemaining<=0){
-      clearInterval(countdownTimer);
-      cdEl.style.display='none';
-      countdownRemaining=0;
+      countdownActive=false;
+      const cdEl=document.getElementById('waveCountdown');
+      if(cdEl)cdEl.style.display='none';
       startWave();
-    } else {
-      cdNum.textContent=countdownRemaining;
     }
-  },1000);
+  }
 }
 function onWaveClear(){
   waveActive=false;const w=WAVES[waveIdx];
@@ -967,26 +971,14 @@ function onWaveClear(){
   showBanner('WAVE CLEAR! +💰'+reward+(restore>0?' +❤️'+restore:''),'#b8ff50');
   waveIdx++;
   if(waveIdx>=WAVES.length){setTimeout(winGame,1600);return;}
-  // 10초 카운트다운
+  // 10초 카운트다운 (루프 기반, isPaused 시 완전 정지)
   countdownRemaining=10;
-  countdownPaused=false;
+  countdownAccum=0;
+  countdownActive=true;
   const cdEl=document.getElementById('waveCountdown');
   const cdNum=document.getElementById('cdNum');
   cdEl.style.display='block';
   cdNum.textContent=countdownRemaining;
-  clearInterval(countdownTimer);
-  countdownTimer=setInterval(()=>{
-    if(isPaused)return; // 일시정지 중이면 카운트 안 함
-    countdownRemaining--;
-    if(countdownRemaining<=0){
-      clearInterval(countdownTimer);
-      cdEl.style.display='none';
-      countdownRemaining=0;
-      startWave();
-    } else {
-      cdNum.textContent=countdownRemaining;
-    }
-  },1000);
 }
 
 // ── MAIN LOOP ────────────────────────────────────────────────
@@ -1197,6 +1189,8 @@ function loop(ts){
   for(let i=floatingTexts.length-1;i>=0;i--){
     const ft=floatingTexts[i];ft.life-=dt;ft.y+=ft.vy*dt;if(ft.life<=0)floatingTexts.splice(i,1);
   }
+  // 카운트다운 틱 (isPaused=false일 때만 루프가 실행되므로 자동 정지)
+  tickCountdown(dt);
   // 환경 파티클 업데이트
   updateEnvParticles(dt);
   screenShake=Math.max(0,screenShake-dt*16);
@@ -1401,23 +1395,28 @@ function draw(){
 }
 
 // ── ENV PARTICLES ───────────────────────────────────────────
-const ENV_RATE={ jungle:0, desert:0.6, arctic:1.8, volcanic:1.2 };
+const ENV_RATE={ jungle:0, desert:1.5, arctic:4.0, volcanic:2.0 };
 function updateEnvParticles(dt){
   // 스폰
   const rate=ENV_RATE[currentBiome]||0;
   if(rate>0&&Math.random()<rate*dt){
     if(currentBiome==='arctic'){
-      // 눈송이: 화면 전체 상단에서 내려옴
-      envParticles.push({
-        x:Math.random()*W, y:-8,
-        vx:(Math.random()-.5)*18+Math.sin(Date.now()*.001)*8,
-        vy:28+Math.random()*22,
-        life:H/50+Math.random()*1.5,
-        maxLife:H/50+2,
-        col:`rgba(${200+Math.floor(Math.random()*55)},${220+Math.floor(Math.random()*35)},255,${0.4+Math.random()*.4})`,
-        r:1+Math.random()*2.5, type:'snow',
-        wobble:Math.random()*Math.PI*2
-      });
+      // 눈송이: 한 프레임에 여러 개 스폰, 화면 전체 분포
+      const count=2+Math.floor(Math.random()*3);
+      for(let si=0;si<count;si++){
+        const vy=22+Math.random()*20;
+        const fallTime=(H+20)/vy; // 화면 끝까지 내려오는 데 걸리는 시간
+        envParticles.push({
+          x:Math.random()*W, y:-5-Math.random()*30,
+          vx:(Math.random()-.5)*14,
+          vy,
+          life:fallTime+Math.random()*.5,
+          maxLife:fallTime+1,
+          col:`rgba(${200+Math.floor(Math.random()*55)},${220+Math.floor(Math.random()*35)},255,${0.5+Math.random()*.4})`,
+          r:1.2+Math.random()*2.2, type:'snow',
+          wobble:Math.random()*Math.PI*2
+        });
+      }
     } else if(currentBiome==='desert'){
       // 모래바람: 수평으로 빠르게
       if(Math.random()<0.5){
@@ -1449,7 +1448,7 @@ function updateEnvParticles(dt){
   // 업데이트
   for(let i=envParticles.length-1;i>=0;i--){
     const p=envParticles[i]; p.life-=dt;
-    if(p.life<=0||p.x>W+20||p.y<-20){envParticles.splice(i,1);continue;}
+    if(p.life<=0||p.x>W+20||p.y>H+10){envParticles.splice(i,1);continue;}
     if(p.type==='snow'){
       p.wobble+=dt*2.5;
       p.x+=p.vx*dt+Math.sin(p.wobble)*12*dt;
@@ -1480,7 +1479,7 @@ window.startGame=function(){
   document.getElementById('overlay').style.display='none';
   CFG.OUTPOST_HP=120;CFG.regenPerSec=0;CFG.meleeDmgMul=1.0;
   hp=120;kills=0;gold=0;waveIdx=0;enemiesLeft=0;waveActive=false;
-  if(countdownTimer)clearInterval(countdownTimer);countdownRemaining=0;countdownPaused=false;document.getElementById('waveCountdown').style.display='none';
+  countdownActive=false;countdownRemaining=0;countdownAccum=0;document.getElementById('waveCountdown').style.display='none';
   bullets=[];enemies=[];particles=[];floatingTexts=[];enemyBullets=[];envParticles=[];
   screenShake=0;lastFire=0;frenzyActive=false;shieldActive=false;upgradeLevel={};
   SKILLS.forEach(s=>{s.unlocked=false;s.cdLeft=0;});
