@@ -184,7 +184,7 @@ canvas{display:block;position:fixed;top:0;left:0;}
 const WEAPON_DEFS = {
   machinegun: {
     icon:'🔫', name:'MACHINE GUN', color:'#ffe566',
-    baseDmg:14,   baseRate:200,  baseAmmo:20,  baseReload:900,
+    baseDmg:14,   baseRate:220,  baseAmmo:20,  baseReload:750,
     baseSpeed:480, upgradeCost:40, costMul:1.6, critChance:0.08, critMul:1.8, unlockCost:0,
     desc:'빠른 연사, 짧은 재장전',
     shoot(cx,cy,angle,state){
@@ -327,43 +327,62 @@ const BIOMES = {
 // biome: 배경 환경 / hpRestore: 클리어 시 회복 HP
 // 초반은 회복 넉넉히, 후반은 적게 (희소성 밸런스)
 const WAVES=[
-  // ═══ JUNGLE (W1~3) ═══ 기초 단계, 여유 있는 클리어 회복
+  // ═══ JUNGLE (W1~3) ════════════════════════════════
+  // W1: 튜토리얼. 기관총 1탄창 미만 소모.
   {w:1,  biome:'jungle',
-   squads:[{count:4, type:'basic',  hp:22, speed:40}],
-   spawnMs:900, reward:25, hpRestore:30},
+   squads:[{count:4, type:'basic', hp:20, speed:38}],
+   spawnMs:1000, reward:30, hpRestore:35},
+
+  // W2: 기본 6마리. 1탄창 딱 소모, 장전 1회.
   {w:2,  biome:'jungle',
-   squads:[{count:6, type:'basic',  hp:26, speed:44}],
-   spawnMs:800, reward:35, hpRestore:25},
+   squads:[{count:6, type:'basic', hp:24, speed:42}],
+   spawnMs:900, reward:40, hpRestore:28},
+
+  // W3: 보스 (HP 140) + 소수 잡몹. 보스는 느리고 탄막 4방향.
+  // 총HP 예산: (4×24)+(2×16)+140 = 364 → Lv0~1 기관총 3탄창
   {w:3,  biome:'jungle',
-   squads:[{count:6, type:'basic',  hp:30, speed:46},{count:2,type:'runner',hp:18,speed:75},{count:1,type:'boss',hp:300,speed:32}],
-   spawnMs:750, reward:60, hpRestore:20, hasBoss:true},
+   squads:[{count:4, type:'basic', hp:24, speed:42},{count:2,type:'runner',hp:16,speed:70},{count:1,type:'boss',hp:140,speed:30}],
+   spawnMs:900, reward:65, hpRestore:25, hasBoss:true},
 
-  // ═══ DESERT (W4~6) ═══ 고온의 사막, 빠른 적 + 원거리 저격
+  // ═══ DESERT (W4~6) ════════════════════════════════
+  // W4: 사막 입장. 러너 중심, 빠르지만 HP 낮음.
   {w:4,  biome:'desert',
-   squads:[{count:5, type:'runner', hp:28, speed:78},{count:4,type:'basic',hp:34,speed:48}],
-   spawnMs:700, reward:55, hpRestore:18},
+   squads:[{count:5, type:'runner', hp:26, speed:72},{count:3,type:'basic',hp:30,speed:46}],
+   spawnMs:800, reward:55, hpRestore:22},
+
+  // W5: 브루트 2마리 + 스웜. 브루트가 어그로 끌면서 스웜이 파고듦.
   {w:5,  biome:'desert',
-   squads:[{count:2, type:'brute',  hp:70, speed:38},{count:6,type:'swarm',hp:16,speed:75}],
-   spawnMs:720, reward:70, hpRestore:15},
+   squads:[{count:2, type:'brute', hp:65, speed:36},{count:6,type:'swarm',hp:14,speed:72}],
+   spawnMs:800, reward:72, hpRestore:18},
+
+  // W6: 보스 (HP 280) + 스나이퍼. 업그레이드 2회 가정 DPS~100.
+  // 총HP: (2×42)+(3×30)+280 = 454 → 3~4탄창
   {w:6,  biome:'desert',
-   squads:[{count:3, type:'sniper', hp:44, speed:30},{count:5,type:'runner',hp:35,speed:82},{count:1,type:'boss',hp:500,speed:28}],
-   spawnMs:620, reward:110, hpRestore:12, hasBoss:true},
+   squads:[{count:2, type:'sniper', hp:42, speed:28},{count:3,type:'runner',hp:30,speed:78},{count:1,type:'boss',hp:280,speed:26}],
+   spawnMs:750, reward:110, hpRestore:15, hasBoss:true},
 
-  // ═══ ARCTIC (W7~8) ═══ 설원, 유령 같은 스펙터 + 폭탄
+  // ═══ ARCTIC (W7~8) ════════════════════════════════
+  // W7: 브루트+스펙터. 스펙터는 텔레포트라 쫓기 어려움.
   {w:7,  biome:'arctic',
-   squads:[{count:3, type:'brute',  hp:95, speed:40},{count:4,type:'specter',hp:60,speed:58},{count:4,type:'runner',hp:40,speed:85}],
-   spawnMs:600, reward:100, hpRestore:10},
-  {w:8,  biome:'arctic',
-   squads:[{count:4, type:'bomber', hp:60, speed:52},{count:3,type:'specter',hp:75,speed:62},{count:5,type:'swarm',hp:22,speed:88}],
-   spawnMs:540, reward:125, hpRestore:8},
+   squads:[{count:3, type:'brute', hp:88, speed:38},{count:3,type:'specter',hp:55,speed:55},{count:4,type:'runner',hp:36,speed:80}],
+   spawnMs:700, reward:105, hpRestore:12},
 
-  // ═══ VOLCANIC (W9~10) ═══ 화산, 가장 강력한 적들
+  // W8: 보머+스펙터+스웜. 다양한 패턴 혼합.
+  {w:8,  biome:'arctic',
+   squads:[{count:3, type:'bomber', hp:55, speed:48},{count:3,type:'specter',hp:68,speed:58},{count:5,type:'swarm',hp:20,speed:82}],
+   spawnMs:650, reward:130, hpRestore:10},
+
+  // ═══ VOLCANIC (W9~10) ═════════════════════════════
+  // W9: 보스 (HP 550) + 조합. 업그레이드 3~4회 가정 DPS~130.
+  // 보스 처치에 ~4초, 잡몹 포함 전체 6~8탄창
   {w:9,  biome:'volcanic',
-   squads:[{count:4, type:'sniper', hp:80, speed:36},{count:4,type:'specter',hp:70,speed:65},{count:5,type:'runner',hp:55,speed:90},{count:1,type:'boss',hp:900,speed:25}],
-   spawnMs:460, reward:200, hpRestore:6, hasBoss:true},
+   squads:[{count:3, type:'sniper', hp:72, speed:34},{count:3,type:'specter',hp:62,speed:60},{count:4,type:'runner',hp:50,speed:85},{count:1,type:'boss',hp:550,speed:24}],
+   spawnMs:600, reward:200, hpRestore:8, hasBoss:true},
+
+  // W10: 파이널. 자이언트+보머+러너. 보스 없이 물량으로 승부.
   {w:10, biome:'volcanic',
-   squads:[{count:3, type:'giant',  hp:280,speed:35},{count:5,type:'bomber',hp:80,speed:60},{count:6,type:'runner',hp:62,speed:92}],
-   spawnMs:620, reward:240, hpRestore:0},
+   squads:[{count:3, type:'giant', hp:250,speed:33},{count:4,type:'bomber',hp:72,speed:56},{count:6,type:'runner',hp:55,speed:88}],
+   spawnMs:700, reward:250, hpRestore:0},
 ];
 
 // ── 초소 업그레이드 ────────────────────────────────────────────
@@ -381,7 +400,7 @@ const SKILLS=[
 ];
 
 // ── CFG ──────────────────────────────────────────────────────
-const CFG={OUTPOST_HP:100,regenPerSec:0,meleeDmgMul:1.0};
+const CFG={OUTPOST_HP:120,regenPerSec:0,meleeDmgMul:1.0};
 const OUTPOST_BLOCK_R=52;
 const BULLET_START_R=44;
 
@@ -998,7 +1017,7 @@ function loop(ts){
       else{
         e.attackTimer+=dt;
         if(e.attackTimer>=1.0){e.attackTimer=0;
-          if(!shieldActive){const dmg=(e.type==='giant'?18:e.type==='brute'?13:e.type==='runner'?5:7)*CFG.meleeDmgMul;
+          if(!shieldActive){const dmg=(e.type==='giant'?15:e.type==='brute'?10:e.type==='runner'?3:5)*CFG.meleeDmgMul;
             hp=Math.max(0,hp-dmg);updateHUD();screenShake=6;if(hp<=0){gameOver();return false;}}
         }
         const push=minDist-dist+1;e.x-=Math.cos(e.angle)*push;e.y-=Math.sin(e.angle)*push;
@@ -1010,30 +1029,30 @@ function loop(ts){
       e.zigTimer+=dt;if(e.zigTimer>.55){e.zigDir*=-1;e.zigTimer=0;}
       const perp=e.angle+Math.PI/2;
       if(dist>minDist){e.x+=(Math.cos(e.angle)*spd+Math.cos(perp)*spd*.5*e.zigDir)*dt;e.y+=(Math.sin(e.angle)*spd+Math.sin(perp)*spd*.5*e.zigDir)*dt;}
-      else{e.attackTimer+=dt;if(e.attackTimer>=.8){e.attackTimer=0;if(!shieldActive){hp=Math.max(0,hp-5*CFG.meleeDmgMul);updateHUD();if(hp<=0){gameOver();return;}}}
+      else{e.attackTimer+=dt;if(e.attackTimer>=.8){e.attackTimer=0;if(!shieldActive){hp=Math.max(0,hp-3*CFG.meleeDmgMul);updateHUD();if(hp<=0){gameOver();return;}}}
         const push=minDist-dist+1;e.x-=Math.cos(e.angle)*push;e.y-=Math.sin(e.angle)*push;}
     }
     else if(e.pattern==='circle'){
       const orbitR=R*.55;
       if(dist>orbitR+20){e.x+=Math.cos(e.angle)*spd*dt;e.y+=Math.sin(e.angle)*spd*dt;}
       else{e.orbitAngle+=e.orbitDir*dt*1.1;const tr=Math.max(minDist,dist-dt*16);e.x=cx+Math.cos(e.orbitAngle)*tr;e.y=cy+Math.sin(e.orbitAngle)*tr;
-        if(dist<=minDist+4){e.attackTimer+=dt;if(e.attackTimer>=1.2){e.attackTimer=0;if(!shieldActive){hp=Math.max(0,hp-9*CFG.meleeDmgMul);updateHUD();screenShake=4;if(hp<=0){gameOver();return;}}}}}
+        if(dist<=minDist+4){e.attackTimer+=dt;if(e.attackTimer>=1.2){e.attackTimer=0;if(!shieldActive){hp=Math.max(0,hp-7*CFG.meleeDmgMul);updateHUD();screenShake=4;if(hp<=0){gameOver();return;}}}}}
     }
     else if(e.pattern==='sniper'){
       const keepDist=R*.68;
       if(dist>keepDist+15)e.x+=Math.cos(e.angle)*spd*dt,e.y+=Math.sin(e.angle)*spd*dt;
       else if(dist<keepDist-15)e.x-=Math.cos(e.angle)*spd*.5*dt,e.y-=Math.sin(e.angle)*spd*.5*dt;
       e.sniperTimer-=dt;
-      if(e.sniperTimer<=0){e.sniperTimer=3+Math.random()*2;sfx('snipe');
+      if(e.sniperTimer<=0){e.sniperTimer=4+Math.random()*2;sfx('snipe');
         const sa=Math.atan2(cy-e.y,cx-e.x);
-        enemyBullets.push({x:e.x,y:e.y,vx:Math.cos(sa)*220,vy:Math.sin(sa)*220,life:3,dmg:12,col:'#4488ff'});
+        enemyBullets.push({x:e.x,y:e.y,vx:Math.cos(sa)*180,vy:Math.sin(sa)*180,life:3,dmg:8,col:'#4488ff'});
         spawnParticles(e.x,e.y,'#4488ff',4,60,.25);}
     }
     else if(e.pattern==='swarm'){
       e.swarmAngle+=dt*(1.8+Math.sin(e.bobT*.5)*.4);
       if(dist>R*.5){const mx=e.angle*.7+e.swarmAngle*.3;e.x+=Math.cos(mx)*spd*dt;e.y+=Math.sin(mx)*spd*dt;}
       else if(dist>minDist){e.x+=Math.cos(e.angle)*spd*1.4*dt;e.y+=Math.sin(e.angle)*spd*1.4*dt;}
-      else{e.attackTimer+=dt;if(e.attackTimer>=.7){e.attackTimer=0;if(!shieldActive){hp=Math.max(0,hp-4*CFG.meleeDmgMul);updateHUD();if(hp<=0){gameOver();return;}}}
+      else{e.attackTimer+=dt;if(e.attackTimer>=.7){e.attackTimer=0;if(!shieldActive){hp=Math.max(0,hp-2*CFG.meleeDmgMul);updateHUD();if(hp<=0){gameOver();return;}}}
         const push=minDist-dist+1;e.x-=Math.cos(e.angle)*push;e.y-=Math.sin(e.angle)*push;}
     }
     else if(e.pattern==='boss'){
@@ -1041,22 +1060,23 @@ function loop(ts){
       const bossMinDist=OUTPOST_BLOCK_R+e.r;
       e.bossTimer=(e.bossTimer||0)+dt;
       e.bossPhase=e.bossPhase||'approach';
-      e.bossChargeTimer=(e.bossChargeTimer||3)-dt;
+      e.bossChargeTimer=(e.bossChargeTimer||6)-dt;
       // 탄막 타이머
-      e.bossBulletTimer=(e.bossBulletTimer||2)-dt;
+      e.bossBulletTimer=(e.bossBulletTimer||4)-dt;
       if(e.bossBulletTimer<=0){
-        e.bossBulletTimer=2.5;
-        // 8방향 탄막
-        for(let bi=0;bi<8;bi++){
-          const ba=(bi/8)*Math.PI*2;
-          enemyBullets.push({x:e.x,y:e.y,vx:Math.cos(ba)*180,vy:Math.sin(ba)*180,life:2.5,dmg:15,col:'#ff2200'});
+        e.bossBulletTimer=4;
+        // 4방향 탄막 (초반 보스는 덜 위협적)
+        const dirs=e.hp<e.maxHp*.5?8:4; // HP 절반 이하면 8방향으로 강화
+        for(let bi=0;bi<dirs;bi++){
+          const ba=(bi/dirs)*Math.PI*2;
+          enemyBullets.push({x:e.x,y:e.y,vx:Math.cos(ba)*160,vy:Math.sin(ba)*160,life:2.5,dmg:8,col:'#ff2200'});
         }
         spawnParticles(e.x,e.y,'#ff4400',12,100,.5);
         sfx('boom');
       }
       if(e.bossChargeTimer<=0){
         // 돌진
-        e.bossChargeTimer=5+Math.random()*2;
+        e.bossChargeTimer=7+Math.random()*3;
         e.bossPhase='charge';
         e.chargeAngle=e.angle;
         e.chargeTimer=.4;
@@ -1081,9 +1101,9 @@ function loop(ts){
       }
       if(dist<=bossMinDist+5){
         e.attackTimer+=dt;
-        if(e.attackTimer>=0.6){
+        if(e.attackTimer>=1.0){
           e.attackTimer=0;
-          if(!shieldActive){hp=Math.max(0,hp-20*CFG.meleeDmgMul);updateHUD();screenShake=8;if(hp<=0){gameOver();return false;}}
+          if(!shieldActive){hp=Math.max(0,hp-10*CFG.meleeDmgMul);updateHUD();screenShake=6;if(hp<=0){gameOver();return false;}}
         }
         const push=bossMinDist-dist+1;e.x-=Math.cos(e.angle)*push;e.y-=Math.sin(e.angle)*push;
       }
@@ -1326,8 +1346,8 @@ function killEnemy(idx){
 // ── GAME FLOW ────────────────────────────────────────────────
 window.startGame=function(){
   document.getElementById('overlay').style.display='none';
-  CFG.OUTPOST_HP=100;CFG.regenPerSec=0;CFG.meleeDmgMul=1.0;
-  hp=100;kills=0;gold=0;waveIdx=0;enemiesLeft=0;waveActive=false;
+  CFG.OUTPOST_HP=120;CFG.regenPerSec=0;CFG.meleeDmgMul=1.0;
+  hp=120;kills=0;gold=0;waveIdx=0;enemiesLeft=0;waveActive=false;
   if(countdownTimer)clearInterval(countdownTimer);document.getElementById('waveCountdown').style.display='none';
   bullets=[];enemies=[];particles=[];floatingTexts=[];enemyBullets=[];
   screenShake=0;lastFire=0;frenzyActive=false;shieldActive=false;upgradeLevel={};
