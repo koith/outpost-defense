@@ -473,69 +473,141 @@ function draw() {
     }
   }
 
-  // ── Outpost ──
+  // ── Outpost (Military Tower) ──
   ctx.save(); ctx.translate(cx,cy);
 
-  // Base platform shadow
-  ctx.beginPath(); ctx.ellipse(6,8,30,14,0,0,Math.PI*2);
-  ctx.fillStyle='rgba(0,0,0,.45)'; ctx.fill();
+  // Ground shadow
+  ctx.beginPath(); ctx.ellipse(5,9,34,13,0,0,Math.PI*2);
+  ctx.fillStyle='rgba(0,0,0,.5)'; ctx.fill();
 
-  // Base ring
-  ctx.beginPath(); ctx.arc(0,0,26,0,Math.PI*2);
-  ctx.fillStyle='#5a4e32'; ctx.fill();
-  ctx.strokeStyle='#3a3020'; ctx.lineWidth=2; ctx.stroke();
-
-  // Tower body (octagon)
-  ctx.save(); ctx.rotate(outpostAngle);
-  const N=8, bodyR=20;
-  ctx.beginPath();
-  for(let i=0;i<N;i++) {
-    const a=(i/N)*Math.PI*2; const x=Math.cos(a)*bodyR, y=Math.sin(a)*bodyR;
-    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  // ── Layer 1: Concrete base platform ──
+  function hexPoly(r, sides) {
+    ctx.beginPath();
+    for(let i=0;i<sides;i++){
+      const a=(i/sides)*Math.PI*2-Math.PI/sides;
+      i===0?ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r):ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);
+    }
+    ctx.closePath();
   }
-  ctx.closePath();
-  ctx.fillStyle='#c8b472'; ctx.fill();
-  ctx.strokeStyle='#8a7a4a'; ctx.lineWidth=2; ctx.stroke();
+  // base slab
+  hexPoly(28, 8);
+  ctx.fillStyle='#5a5a52'; ctx.fill();
+  ctx.strokeStyle='#3a3a34'; ctx.lineWidth=2.5; ctx.stroke();
+  // base bevel highlight
+  hexPoly(26, 8);
+  ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.lineWidth=1; ctx.stroke();
 
-  // Window slits
-  for(let i=0;i<8;i++) {
-    const a=(i/8)*Math.PI*2+(outpostAngle*.0);
-    ctx.save(); ctx.rotate((i/8)*Math.PI*2);
-    ctx.fillStyle='rgba(0,100,40,.7)';
-    ctx.shadowColor='#00ff88'; ctx.shadowBlur=4;
-    ctx.fillRect(bodyR-4,-3,5,6);
-    ctx.shadowBlur=0;
-    ctx.restore();
-  }
+  // ── Layer 2: Lower tower body ──
+  hexPoly(20, 8);
+  const bodyGrad = ctx.createRadialGradient(-4,-4,2,0,0,22);
+  bodyGrad.addColorStop(0,'#c8bfa0');
+  bodyGrad.addColorStop(0.5,'#b8a87a');
+  bodyGrad.addColorStop(1,'#8a7a50');
+  ctx.fillStyle=bodyGrad; ctx.fill();
+  ctx.strokeStyle='#6a5e38'; ctx.lineWidth=2; ctx.stroke();
+
+  // Panel lines on body (horizontal band)
+  ctx.strokeStyle='rgba(0,0,0,.25)'; ctx.lineWidth=1.5;
+  hexPoly(20,8); ctx.stroke();
+  // mid-band
+  ctx.save();
+  ctx.scale(1,0.45);
+  hexPoly(20,8);
+  ctx.strokeStyle='rgba(0,0,0,.2)'; ctx.lineWidth=1; ctx.stroke();
   ctx.restore();
 
-  // Antenna
-  ctx.strokeStyle='#333'; ctx.lineWidth=2;
-  ctx.beginPath(); ctx.moveTo(14,-2); ctx.lineTo(14,-28); ctx.stroke();
-  ctx.beginPath(); ctx.arc(14,-28,4,0,Math.PI*2);
-  ctx.fillStyle='#111';
-  ctx.shadowColor='#ff4400'; ctx.shadowBlur=8; ctx.fill(); ctx.shadowBlur=0;
+  // Access door (front face)
+  ctx.fillStyle='#4a4236';
+  ctx.fillRect(-5,4,10,14);
+  ctx.strokeStyle='#2a2018'; ctx.lineWidth=1; ctx.strokeRect(-5,4,10,14);
+  // door handle
+  ctx.fillStyle='#888'; ctx.fillRect(2,10,2,4);
+  // door window
+  ctx.fillStyle='rgba(0,80,40,.6)';
+  ctx.shadowColor='#00ff88'; ctx.shadowBlur=3;
+  ctx.fillRect(-3,5,6,5);
+  ctx.shadowBlur=0;
 
-  // Turret base
+  // ── Layer 3: Observation deck (upper octagon, narrower) ──
+  ctx.save();
+  ctx.scale(1, 0.75); // slight vertical squish for 3D feel
+  hexPoly(17, 8);
+  ctx.restore();
+  ctx.save();
+  ctx.translate(0,-14);
+  hexPoly(17, 8);
+  const deckGrad = ctx.createRadialGradient(-3,-3,1,0,0,19);
+  deckGrad.addColorStop(0,'#d4c898');
+  deckGrad.addColorStop(1,'#9a8a58');
+  ctx.fillStyle=deckGrad; ctx.fill();
+  ctx.strokeStyle='#5a4e2a'; ctx.lineWidth=2; ctx.stroke();
+
+  // Observation windows (8 slits around deck)
+  for(let i=0;i<8;i++){
+    ctx.save(); ctx.rotate((i/8)*Math.PI*2);
+    ctx.fillStyle='rgba(0,120,60,.85)';
+    ctx.shadowColor='#00ffaa'; ctx.shadowBlur=5;
+    ctx.fillRect(13,-2.5,5,5);
+    ctx.shadowBlur=0;
+    // window frame
+    ctx.strokeStyle='#333'; ctx.lineWidth=.8;
+    ctx.strokeRect(13,-2.5,5,5);
+    ctx.restore();
+  }
+
+  // Deck rim
+  hexPoly(17,8);
+  ctx.strokeStyle='rgba(255,255,255,.12)'; ctx.lineWidth=1; ctx.stroke();
+  ctx.restore(); // deck translate
+
+  // ── Antenna mast (right side) ──
+  ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(16,-2); ctx.lineTo(16,-38); ctx.stroke();
+  // crossbar
+  ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(11,-30); ctx.lineTo(21,-30); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(12,-24); ctx.lineTo(20,-24); ctx.stroke();
+  // sensor orb
+  ctx.beginPath(); ctx.arc(16,-40,5,0,Math.PI*2);
+  ctx.fillStyle='#1a1a1a';
+  ctx.shadowColor='#ff4400'; ctx.shadowBlur=10;
+  ctx.fill(); ctx.shadowBlur=0;
+  ctx.strokeStyle='#444'; ctx.lineWidth=1; ctx.stroke();
+
+  // ── Turret platform ring ──
+  ctx.translate(0,-14);
+  ctx.beginPath(); ctx.arc(0,0,11,0,Math.PI*2);
+  ctx.fillStyle='#2a2a2a'; ctx.fill();
+  ctx.strokeStyle='#555'; ctx.lineWidth=1.5; ctx.stroke();
+  // rotation ring detail
   ctx.beginPath(); ctx.arc(0,0,9,0,Math.PI*2);
-  ctx.fillStyle='#333'; ctx.fill();
-  ctx.strokeStyle='#222'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.strokeStyle='#444'; ctx.lineWidth=1; ctx.stroke();
 
-  // Turret barrel
+  // ── Turret barrel ──
   ctx.save(); ctx.rotate(turretAngle);
-  // barrel
-  ctx.fillStyle='#222';
-  ctx.fillRect(-4,-4,30,8);
-  // barrel tip detail
+  // gun mount box
+  ctx.fillStyle='#1e1e1e';
+  ctx.fillRect(-6,-5,10,10);
+  ctx.strokeStyle='#444'; ctx.lineWidth=1; ctx.strokeRect(-6,-5,10,10);
+  // barrel (double barrel)
+  ctx.fillStyle='#181818';
+  ctx.fillRect(2,-5,26,4);   // top barrel
+  ctx.fillRect(2, 1,26,4);   // bottom barrel
+  // barrel shroud
+  ctx.fillStyle='#252525';
+  ctx.fillRect(2,-5.5,8,11);
+  // muzzle brakes
   ctx.fillStyle='#111';
-  ctx.fillRect(22,-3,6,6);
-  // turret body
-  ctx.beginPath(); ctx.arc(0,0,8,0,Math.PI*2);
-  ctx.fillStyle='#3a3a3a'; ctx.fill();
-  // sight dot
-  ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2);
-  ctx.fillStyle='#ff4400';
-  ctx.shadowColor='#ff4400'; ctx.shadowBlur=6; ctx.fill(); ctx.shadowBlur=0;
+  ctx.fillRect(24,-5,4,4); ctx.fillRect(24,1,4,4);
+  // sight
+  ctx.fillStyle='#333'; ctx.fillRect(4,-7,6,4);
+  // center pivot
+  ctx.beginPath(); ctx.arc(0,0,4,0,Math.PI*2);
+  ctx.fillStyle='#333'; ctx.fill();
+  ctx.beginPath(); ctx.arc(0,0,2,0,Math.PI*2);
+  ctx.fillStyle='#ff3300';
+  ctx.shadowColor='#ff3300'; ctx.shadowBlur=5;
+  ctx.fill(); ctx.shadowBlur=0;
   ctx.restore();
 
   ctx.restore(); // outpost translate
