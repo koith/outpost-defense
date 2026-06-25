@@ -185,8 +185,22 @@ canvas{display:block;position:fixed;top:0;left:0;}
 <div id="overlay">
   <h1>OUTPOST</h1>
   <div class="sub">LAST STAND · 최후의 초소</div>
-  <div style="color:rgba(255,255,255,.4);font-size:11px;text-align:center;margin-bottom:24px;line-height:2;letter-spacing:1px">
+  <div style="color:rgba(255,255,255,.4);font-size:11px;text-align:center;margin-bottom:16px;line-height:2;letter-spacing:1px">
     화면 터치 → 버추얼 조이스틱으로 포탑 조준<br>웨이브를 막고 골드로 무기와 초소를 강화하라
+  </div>
+  <!-- 버전 + 변경사항 -->
+  <div style="background:rgba(0,0,0,.5);border:1px solid rgba(144,238,64,.2);border-radius:8px;padding:10px 16px;margin-bottom:20px;max-width:290px;text-align:left">
+    <div style="color:#b8ff50;font-size:10px;letter-spacing:3px;margin-bottom:6px">v1.0  PATCH NOTES</div>
+    <div style="color:rgba(255,255,255,.55);font-size:9px;line-height:1.9;letter-spacing:.5px">
+      · 전방 방어선 컨셉 적용 (하단 초소 배치)<br>
+      · 세로 HP바 (좌측 눈금 표시)<br>
+      · 무기 5종 잠금/해금 + 15레벨 업그레이드<br>
+      · 4개 바이옴 씬 전환 연출<br>
+      · 보스 웨이브 (W3·W6·W9)<br>
+      · 스킬 3종 (공습·광란·방어막)<br>
+      · 크리티컬 시스템 + 피해 수치 표시<br>
+      · 광고 보고 이어하기
+    </div>
   </div>
   <button class="btn" onclick="startGame()">▶ START MISSION</button>
 </div>
@@ -464,7 +478,7 @@ function getCurDef(){return WEAPON_DEFS[currentWeaponId];}
 // ── RESIZE / TREES ────────────────────────────────────────────
 function resize(){
   W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;
-  cx=W/2;cy=H*0.76;R=Math.min(W,H)*0.38;buildTrees();
+  cx=W/2;cy=H*0.65;R=Math.min(W,H)*0.38;buildTrees();
 }
 function buildTrees(){
   trees=[];
@@ -933,8 +947,8 @@ function startReload(){
 // ── ENEMY SPAWN ───────────────────────────────────────────────
 function spawnEnemy(squad){
   const def=ENEMY_TYPES[squad.type]||ENEMY_TYPES.basic;
-  // 전방(위쪽) 180도 범위에서 스폰 — 좌우 퍼지는 느낌
-  const a=(-Math.PI*5/6)+Math.random()*(Math.PI*4/6)*1.5;
+  // 전방(위쪽) 스폰 — -π~0 범위(위쪽 반원), 확실히 아래 안 나옴
+  const a=-Math.PI + Math.random()*Math.PI; // -π ~ 0
   enemies.push({
     x:cx+Math.cos(a)*(R+14),y:cy+Math.sin(a)*(R+14),
     hp:squad.hp,maxHp:squad.hp,speed:(squad.speed||def.speed)*(CFG._envSpeedMul||1),
@@ -1250,7 +1264,7 @@ function loop(ts){
     }
     else if(e.pattern==='teleport'){
       e.teleTimer-=dt;
-      if(e.teleTimer<=0){e.teleTimer=3+Math.random()*2;const na=(-Math.PI*5/6)+Math.random()*(Math.PI*4/6)*1.5,nr=R*.35+Math.random()*R*.5;
+      if(e.teleTimer<=0){e.teleTimer=3+Math.random()*2;const na=-Math.PI+Math.random()*Math.PI,nr=R*.25+Math.random()*R*.5;
         e.x=cx+Math.cos(na)*nr;e.y=cy+Math.sin(na)*nr;spawnParticles(e.x,e.y,'#88ff88',8,80,.4);}
       if(!moveToOutpost())return;
     }
@@ -1368,19 +1382,11 @@ function draw(){
   ctx.fillStyle='rgba(0,0,0,.3)';
   ctx.fillRect(cx-R*.7,wallY+10,R*1.4,6);
 
-  // ── 전장 바닥 격자 (수평선만, 전방감 표현)
-  ctx.strokeStyle=bm.gridCol;ctx.lineWidth=.8;
-  // 원근감 있는 수평선
-  for(let row=0;row<6;row++){
-    const fy=cy-R*0.9+row*(R*1.0/5);
-    const fw=R*0.3+row*(R*1.2/5); // 가까울수록 넓어짐
-    ctx.beginPath();ctx.moveTo(cx-fw,fy);ctx.lineTo(cx+fw,fy);ctx.stroke();
-  }
-  // 수직 원근선 (소실점 = cx, 상단)
-  const vp={x:cx,y:cy-R*1.2}; // 소실점
-  for(let col=-3;col<=3;col++){
-    const bx=cx+col*(R*.25);
-    ctx.beginPath();ctx.moveTo(vp.x+(bx-vp.x)*.05,vp.y);ctx.lineTo(bx,cy+R*.2);ctx.stroke();
+  // ── 전장 바닥 수평선만 (탑뷰에 맞게 사선 제거)
+  ctx.strokeStyle=bm.gridCol;ctx.lineWidth=.7;
+  for(let row=0;row<5;row++){
+    const fy=cy-R*0.85+row*(R*0.95/4);
+    ctx.beginPath();ctx.moveTo(cx-R*0.9,fy);ctx.lineTo(cx+R*0.9,fy);ctx.stroke();
   }
 
   // 적
