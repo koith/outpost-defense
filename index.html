@@ -17,8 +17,22 @@ canvas{display:block;position:fixed;top:0;left:0;}
   padding:4px 8px;color:#90ee40;font-size:9px;letter-spacing:1px;flex:1;text-align:center;min-width:0;}
 .hp span{font-size:15px;font-weight:bold;color:#b8ff50;display:block;white-space:nowrap;}
 
-#hpbar{position:fixed;bottom:96px;left:0;right:0;height:4px;background:#111;z-index:10;pointer-events:none;}
-#hpfill{height:100%;background:linear-gradient(90deg,#ff2020,#ff8800,#90ee40);background-size:300% 100%;transition:width .3s;}
+/* 세로 HP바 — 좌측 끝 */
+#hpbar{
+  position:fixed; left:0; top:80px; bottom:96px;
+  width:14px; z-index:10; pointer-events:none;
+  background:rgba(0,0,0,.5);
+  display:flex; flex-direction:column-reverse;
+}
+/* 눈금 칸 (JS로 생성) */
+.hpTick{
+  flex:1; margin:1px 2px;
+  background:rgba(144,238,64,.7);
+  border-radius:2px;
+  transition:background .2s;
+}
+.hpTick.dead{ background:rgba(30,30,30,.4); }
+.hpTick.warn{ background:rgba(255,80,0,.8); }
 
 /* 잔탄: 재장전 버튼 바로 위, 세로로 쌓기 */
 #ammorow{position:fixed;bottom:184px;left:16px;display:flex;flex-direction:column-reverse;gap:2px;z-index:10;pointer-events:none;align-items:center;}
@@ -140,7 +154,7 @@ canvas{display:block;position:fixed;top:0;left:0;}
   <div class="hp"><span id="gn">0</span>💰</div>
   <div class="hp"><span id="kn">0</span>KILLS</div>
 </div>
-<div id="hpbar"><div id="hpfill" style="width:100%"></div></div>
+<div id="hpbar"></div>
 <div id="ammorow"></div>
 <!-- weaponHud removed -->
 <div id="skillBar"></div>
@@ -389,7 +403,7 @@ const WAVES=[
 
 // ── 초소 업그레이드 ────────────────────────────────────────────
 const OUTPOST_UPGRADES=[
-  {id:'armor', icon:'🛡',name:'장갑 강화',  desc:'최대HP +25',      max:5,baseCost:60,costMul:1.8,apply:()=>{CFG.OUTPOST_HP+=25;hp=Math.min(hp+25,CFG.OUTPOST_HP);updateHUD();}},
+  {id:'armor', icon:'🛡',name:'장갑 강화',  desc:'최대HP +25',      max:5,baseCost:60,costMul:1.8,apply:()=>{CFG.OUTPOST_HP+=25;hp=Math.min(hp+25,CFG.OUTPOST_HP);initHpBar();}},
   {id:'regen', icon:'💚',name:'자동 회복',  desc:'초당 HP+0.5 자동회복',  max:3,baseCost:80,costMul:2.0,apply:()=>{CFG.regenPerSec+=0.5;}},
   {id:'block', icon:'🔰',name:'방어 강화',  desc:'근접 피해 -20%',  max:3,baseCost:70,costMul:1.9,apply:()=>{CFG.meleeDmgMul=Math.max(.2,CFG.meleeDmgMul-.2);}},
 ];
@@ -463,6 +477,19 @@ function buildTrees(){
 }
 
 // ── AMMO / SKILL UI ──────────────────────────────────────────
+function initHpBar(){
+  const bar=document.getElementById('hpbar');
+  if(!bar)return;
+  bar.innerHTML='';
+  // HP 20당 눈금 1개 (최소 5, 최대 20)
+  const ticks=Math.min(20,Math.max(5,Math.round(CFG.OUTPOST_HP/20)));
+  for(let i=0;i<ticks;i++){
+    const d=document.createElement('div');
+    d.className='hpTick'; bar.appendChild(d);
+  }
+  // 즉시 업데이트
+  updateHUD();
+}
 function buildAmmoBar(){
   const w=getCurWeapon(),el=document.getElementById('ammorow');el.innerHTML='';
   const max=Math.min(w.maxAmmo,30);
@@ -534,7 +561,20 @@ function updateHUD(){
   document.getElementById('hn').textContent=hp;
   document.getElementById('kn').textContent=kills;
   document.getElementById('gn').textContent=gold;
-  document.getElementById('hpfill').style.width=(hp/CFG.OUTPOST_HP*100)+'%';
+  // 세로 HP 눈금 업데이트
+  const hpBar=document.getElementById('hpbar');
+  if(hpBar && hpBar.children.length>0){
+    const total=hpBar.children.length;
+    const filled=Math.round((hp/CFG.OUTPOST_HP)*total);
+    for(let i=0;i<total;i++){
+      const tick=hpBar.children[i]; // column-reverse: children[0]=최하단
+      if(i<filled){
+        tick.className='hpTick'+(filled/total<0.3?' warn':'');
+      } else {
+        tick.className='hpTick dead';
+      }
+    }
+  }
 }
 
 // ── BANNER / KILLMSG ─────────────────────────────────────────
@@ -881,7 +921,8 @@ function startReload(){
 // ── ENEMY SPAWN ───────────────────────────────────────────────
 function spawnEnemy(squad){
   const def=ENEMY_TYPES[squad.type]||ENEMY_TYPES.basic;
-  const a=Math.random()*Math.PI*2;
+  // 전방(위쪽) 180도 범위에서 스폰 — 좌우 퍼지는 느낌
+  const a=(-Math.PI*5/6)+Math.random()*(Math.PI*4/6)*1.5;
   enemies.push({
     x:cx+Math.cos(a)*(R+14),y:cy+Math.sin(a)*(R+14),
     hp:squad.hp,maxHp:squad.hp,speed:(squad.speed||def.speed)*(CFG._envSpeedMul||1),
@@ -1021,8 +1062,17 @@ function loop(ts){
   if(joy.active&&currentTab==='fire'){
     const dx=joy.curX-joy.baseX,dy=joy.curY-joy.baseY;
     const dist=Math.sqrt(dx*dx+dy*dy);
-    if(dist>8){// 데드존
-      targetAngle=Math.atan2(dy,dx);
+    if(dist>8){
+      let raw=Math.atan2(dy,dx);
+      // 전방(위쪽) 180도만 허용: -π ~ 0 (위쪽 절반)
+      // 경계 초과 시 가장 가까운 경계로 클램프
+      const MIN_A=-Math.PI; // 왼쪽 (-180°)
+      const MAX_A=0;        // 오른쪽 (0°)
+      // raw가 아래쪽(0~π)이면 위쪽 경계로 스냅
+      if(raw>0){
+        raw = raw < Math.PI/2 ? 0 : -Math.PI; // 오른쪽 하단→0, 왼쪽 하단→-π
+      }
+      targetAngle=Math.max(MIN_A,Math.min(MAX_A,raw));
       fireBullet();
     }
   }
@@ -1188,7 +1238,7 @@ function loop(ts){
     }
     else if(e.pattern==='teleport'){
       e.teleTimer-=dt;
-      if(e.teleTimer<=0){e.teleTimer=3+Math.random()*2;const na=Math.random()*Math.PI*2,nr=R*.3+Math.random()*R*.45;
+      if(e.teleTimer<=0){e.teleTimer=3+Math.random()*2;const na=(-Math.PI*5/6)+Math.random()*(Math.PI*4/6)*1.5,nr=R*.35+Math.random()*R*.5;
         e.x=cx+Math.cos(na)*nr;e.y=cy+Math.sin(na)*nr;spawnParticles(e.x,e.y,'#88ff88',8,80,.4);}
       if(!moveToOutpost())return;
     }
@@ -1590,7 +1640,7 @@ function showOverlay(t,col,body){
 // ── INIT ─────────────────────────────────────────────────────
 window.addEventListener('load',()=>{
   resize();window.addEventListener('resize',resize);
-  setupInput();initWeaponStates();buildAmmoBar();draw();
+  setupInput();initWeaponStates();initHpBar();buildAmmoBar();draw();
 });
 </script>
 </body>
