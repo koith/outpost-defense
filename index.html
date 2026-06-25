@@ -222,7 +222,7 @@ const WEAPON_DEFS = {
       const s=BULLET_START_R;
       return [{x:cx+Math.cos(angle)*s,y:cy+Math.sin(angle)*s,
         vx:Math.cos(angle)*state.speed,vy:Math.sin(angle)*state.speed,
-        life:1.4,col:state.color,r:4.5,type:'bullet',dmg:state.dmg}];
+        life:1.8,col:state.color,r:4.5,type:'bullet',dmg:state.dmg}];
     },
     drawBullet(ctx,b){
       ctx.shadowColor=b.col;ctx.shadowBlur=8;
@@ -239,7 +239,7 @@ const WEAPON_DEFS = {
       const s=BULLET_START_R;
       return [{x:cx+Math.cos(angle)*s,y:cy+Math.sin(angle)*s,
         vx:Math.cos(angle)*state.speed,vy:Math.sin(angle)*state.speed,
-        life:1.8,col:state.color,r:8,type:'bomb',dmg:state.dmg,splashR:70}];
+        life:1.4,col:state.color,r:8,type:'bomb',dmg:state.dmg,splashR:70}];
     },
     drawBullet(ctx,b){
       ctx.shadowColor='#ff4400';ctx.shadowBlur=12;
@@ -257,7 +257,7 @@ const WEAPON_DEFS = {
       const s=BULLET_START_R;
       return [{x:cx+Math.cos(angle)*s,y:cy+Math.sin(angle)*s,
         vx:Math.cos(angle)*state.speed,vy:Math.sin(angle)*state.speed,
-        life:0.8,col:state.color,r:3,type:'laser',dmg:state.dmg,pierce:true}];
+        life:0.55,col:state.color,r:3,type:'laser',dmg:state.dmg,pierce:true}];
     },
     drawBullet(ctx,b){
       ctx.shadowColor=b.col;ctx.shadowBlur=14;
@@ -277,7 +277,7 @@ const WEAPON_DEFS = {
       const s=BULLET_START_R;
       return [{x:cx+Math.cos(angle)*s,y:cy+Math.sin(angle)*s,
         vx:Math.cos(angle)*state.speed,vy:Math.sin(angle)*state.speed,
-        life:1.5,col:state.color,r:4,type:'poison',dmg:state.dmg,poisonDmg:state.dmg*.5,poisonDur:5}];
+        life:2.0,col:state.color,r:4,type:'poison',dmg:state.dmg,poisonDmg:state.dmg*.5,poisonDur:5}];
     },
     drawBullet(ctx,b){
       ctx.save();ctx.translate(b.x,b.y);ctx.rotate(Math.atan2(b.vy,b.vx));
@@ -297,7 +297,7 @@ const WEAPON_DEFS = {
       const s=BULLET_START_R;
       return [{x:cx+Math.cos(angle)*s,y:cy+Math.sin(angle)*s,
         vx:Math.cos(angle)*state.speed,vy:Math.sin(angle)*state.speed,
-        life:2.0,col:state.color,r:8,type:'slime',dmg:state.dmg,slowDur:3,slowMul:.45}];
+        life:1.6,col:state.color,r:8,type:'slime',dmg:state.dmg,slowDur:3,slowMul:.45}];
     },
     drawBullet(ctx,b){
       const t=b.life/b.startLife||1;
@@ -947,10 +947,31 @@ function startReload(){
 // ── ENEMY SPAWN ───────────────────────────────────────────────
 function spawnEnemy(squad){
   const def=ENEMY_TYPES[squad.type]||ENEMY_TYPES.basic;
-  // 전방(위쪽) 스폰 — -π~0 범위(위쪽 반원), 확실히 아래 안 나옴
-  const a=-Math.PI + Math.random()*Math.PI; // -π ~ 0
+  // 화면 테두리 밖 스폰 (이미지 기준: 상단+좌우 상단)
+  // 3가지 스폰 존: 상단(60%), 좌상단 테두리(20%), 우상단 테두리(20%)
+  let sx, sy;
+  const zone = Math.random();
+  if(zone < 0.6){
+    // 상단 테두리 전체
+    sx = -30 + Math.random()*(W+60);
+    sy = -30 - Math.random()*40;
+  } else if(zone < 0.8){
+    // 좌측 상단 테두리
+    sx = -30 - Math.random()*40;
+    sy = -30 + Math.random()*(cy*0.8);
+  } else {
+    // 우측 상단 테두리
+    sx = W+30 + Math.random()*40;
+    sy = -30 + Math.random()*(cy*0.8);
+  }
+  // 초소 근접 금지 (반경 R*0.55 이내면 재배치)
+  const spawnDist = Math.sqrt((sx-cx)**2+(sy-cy)**2);
+  if(spawnDist < R*0.55){
+    sx = cx + (sx-cx)/spawnDist * R*0.6;
+    sy = cy + (sy-cy)/spawnDist * R*0.6;
+  }
   enemies.push({
-    x:cx+Math.cos(a)*(R+14),y:cy+Math.sin(a)*(R+14),
+    x:sx, y:sy,
     hp:squad.hp,maxHp:squad.hp,speed:(squad.speed||def.speed)*(CFG._envSpeedMul||1),
     type:squad.type,col:def.col,r:def.r,
     angle:0,bobT:Math.random()*Math.PI*2,hitFlash:0,dead:false,attackTimer:0,
@@ -1110,8 +1131,7 @@ function loop(ts){
   // 플레이어 총알
   for(let i=bullets.length-1;i>=0;i--){
     const b=bullets[i];b.life-=dt;b.x+=b.vx*dt;b.y+=b.vy*dt;
-    const od=Math.sqrt((b.x-cx)**2+(b.y-cy)**2);
-    if(od>R+70||b.life<=0){bullets.splice(i,1);continue;}
+    if(b.life<=0||b.x<-40||b.x>W+40||b.y<-40||b.y>H+40){bullets.splice(i,1);continue;}
     let hitAny=false;
     for(let j=enemies.length-1;j>=0;j--){
       const e=enemies[j];if(e.dead)continue;
@@ -1264,13 +1284,12 @@ function loop(ts){
     }
     else if(e.pattern==='teleport'){
       e.teleTimer-=dt;
-      if(e.teleTimer<=0){e.teleTimer=3+Math.random()*2;const na=-Math.PI+Math.random()*Math.PI,nr=R*.25+Math.random()*R*.5;
-        e.x=cx+Math.cos(na)*nr;e.y=cy+Math.sin(na)*nr;spawnParticles(e.x,e.y,'#88ff88',8,80,.4);}
+      if(e.teleTimer<=0){e.teleTimer=3+Math.random()*2;
+        e.x=cx+(Math.random()-.5)*W*0.7;e.y=-20+Math.random()*cy*0.5;spawnParticles(e.x,e.y,'#88ff88',8,80,.4);}
       if(!moveToOutpost())return;
     }
-    // 아레나 경계
-    const ed=Math.sqrt((e.x-cx)**2+(e.y-cy)**2);
-    if(ed>R+32){const ea=Math.atan2(e.y-cy,e.x-cx);e.x=cx+Math.cos(ea)*(R+32);e.y=cy+Math.sin(ea)*(R+32);}
+    // 화면 완전 이탈 시 제거 (좌우 하단 방향)
+    if(e.x<-80||e.x>W+80||e.y>H+80){e.dead=true;enemiesLeft--;if(enemiesLeft<=0&&waveActive)onWaveClear();}
   }
 
   // 파티클
