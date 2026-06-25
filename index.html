@@ -35,7 +35,7 @@ canvas{display:block;position:fixed;top:0;left:0;}
 .hpTick.warn{ background:rgba(255,80,0,.8); }
 
 /* 잔탄: 재장전 버튼 바로 위, 세로로 쌓기 */
-#ammorow{position:fixed;bottom:184px;left:16px;display:flex;flex-direction:column-reverse;gap:2px;z-index:10;pointer-events:none;align-items:center;}
+#ammorow{position:fixed;bottom:184px;left:24px;display:flex;flex-direction:column-reverse;gap:2px;z-index:10;pointer-events:none;align-items:center;}
 .atick{width:7px;height:3px;background:#b8ff50;border-radius:2px;}
 .atick.spent{background:rgba(180,255,80,.12);}
 
@@ -59,7 +59,7 @@ canvas{display:block;position:fixed;top:0;left:0;}
 
 /* 원형 재장전 버튼 — 좌하단 */
 #reloadCircle{
-  position:fixed; bottom:108px; left:8px;
+  position:fixed; bottom:108px; left:20px;
   width:72px; height:72px; border-radius:50%;
   background:rgba(8,14,6,.95);
   cursor:pointer; z-index:21; -webkit-tap-highlight-color:transparent;
@@ -464,15 +464,27 @@ function getCurDef(){return WEAPON_DEFS[currentWeaponId];}
 // ── RESIZE / TREES ────────────────────────────────────────────
 function resize(){
   W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;
-  cx=W/2;cy=H/2;R=Math.min(W,H)*0.40;buildTrees();
+  cx=W/2;cy=H*0.76;R=Math.min(W,H)*0.38;buildTrees();
 }
 function buildTrees(){
   trees=[];
   const bm=BIOMES[currentBiome]||BIOMES.jungle;
-  for(let i=0;i<30;i++){
-    const a=(i/30)*Math.PI*2+Math.random()*.35,r=R+20+Math.random()*45;
-    trees.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r,r:7+Math.random()*11,
-      hue:bm.treeHue+Math.random()*20,lum:bm.treeLum+Math.random()*.08});
+  // 전방(상단) 양측에 나무 배치 — 좌우 측면 통로 느낌
+  for(let i=0;i<38;i++){
+    let x,y,r;
+    if(i<19){
+      // 왼쪽 측면 수풀
+      x = cx - R*0.85 - Math.random()*90;
+      y = Math.random()*(cy+R*.2);
+    } else {
+      // 오른쪽 측면 수풀
+      x = cx + R*0.85 + Math.random()*90;
+      y = Math.random()*(cy+R*.2);
+    }
+    r = 9+Math.random()*14;
+    trees.push({x, y, r,
+      hue:bm.treeHue+Math.random()*20,
+      lum:bm.treeLum+Math.random()*.08});
   }
 }
 
@@ -1274,34 +1286,102 @@ function draw(){
   const sx=screenShake>0?(Math.random()-.5)*screenShake*2:0,sy=screenShake>0?(Math.random()-.5)*screenShake*2:0;
   ctx.save();ctx.translate(sx,sy);
 
-  // BG — biome 기반
+  // BG — 전방 방어선 컨셉
   const bm=BIOMES[currentBiome]||BIOMES.jungle;
-  ctx.fillStyle=bm.bgBase;ctx.fillRect(-20,-20,W+40,H+40);
-  const grd=ctx.createRadialGradient(cx,cy,0,cx,cy,R+55);
-  grd.addColorStop(0,bm.bgMid);grd.addColorStop(.7,bm.bgFar);grd.addColorStop(1,bm.bgBase);
-  ctx.beginPath();ctx.arc(cx,cy,R+55,0,Math.PI*2);ctx.fillStyle=grd;ctx.fill();
-  // biome 특수 오버레이
-  if(currentBiome==='volcanic'){
-    // 용암 균열 느낌
-    ctx.strokeStyle='rgba(255,60,0,.08)';ctx.lineWidth=2;
-    for(let i=0;i<6;i++){const a=(i/6)*Math.PI*2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*(R+50),cy+Math.sin(a)*(R+50));ctx.stroke();}
-  }
-  // 환경 파티클은 updateEnvParticles()에서 처리
-  // Grid
-  ctx.strokeStyle=bm.gridCol;ctx.lineWidth=1;
-  for(let r=R*.3;r<=R+1;r+=R*.3){ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();}
-  for(let i=0;i<12;i++){const a=(i/12)*Math.PI*2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*(R+1),cy+Math.sin(a)*(R+1));ctx.stroke();}
 
-  // Trees
-  for(const t of trees){
-    ctx.beginPath();ctx.ellipse(t.x+4,t.y+6,t.r*.65,t.r*.32,0,0,Math.PI*2);ctx.fillStyle='rgba(0,0,0,.3)';ctx.fill();
-    ctx.beginPath();ctx.arc(t.x,t.y,t.r*.3,0,Math.PI*2);ctx.fillStyle='hsl(25,35%,16%)';ctx.fill();
-    ctx.beginPath();ctx.arc(t.x,t.y-t.r*.25,t.r,0,Math.PI*2);ctx.fillStyle=`hsl(${t.hue},52%,${Math.floor(t.lum*100)}%)`;ctx.fill();
-    ctx.beginPath();ctx.arc(t.x-t.r*.28,t.y-t.r*.12,t.r*.68,0,Math.PI*2);ctx.fillStyle=`hsl(${t.hue+8},56%,${Math.floor((t.lum+.04)*100)}%)`;ctx.fill();
+  // 전체 배경
+  ctx.fillStyle=bm.bgBase;ctx.fillRect(-20,-20,W+40,H+40);
+
+  // ── 전방 위협 지역 (상단): 어두운 안개
+  const threatGrd=ctx.createLinearGradient(0,0,0,cy-R*.3);
+  threatGrd.addColorStop(0,'rgba(0,0,0,.72)');
+  threatGrd.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=threatGrd;ctx.fillRect(-20,-20,W+40,cy-R*.3+20);
+
+  // ── 전장 지면 (중앙): 바이옴 컬러
+  const groundGrd=ctx.createLinearGradient(0,0,0,H);
+  groundGrd.addColorStop(0,bm.bgFar);
+  groundGrd.addColorStop(0.5,bm.bgMid);
+  groundGrd.addColorStop(1,bm.bgBase);
+  ctx.fillStyle=groundGrd;ctx.fillRect(-20,-20,W+40,H+40);
+
+  // ── 전방 안개 (상단에서 내려오는 위협적 안개)
+  const fogGrd=ctx.createLinearGradient(0,0,0,cy);
+  fogGrd.addColorStop(0,bm.fogCol.replace('rgba(','rgba(').replace(/,[^,]+\)$/,',.65)'));
+  fogGrd.addColorStop(0.6,'rgba(0,0,0,0)');
+  ctx.fillStyle=fogGrd;ctx.fillRect(-20,-20,W+40,cy+20);
+
+  // ── 바이옴 특수 지면 효과
+  if(currentBiome==='volcanic'){
+    // 용암 균열선 — 상단에서 하단으로 세로선
+    ctx.strokeStyle='rgba(255,60,0,.07)';ctx.lineWidth=1.5;
+    for(let i=0;i<5;i++){
+      const lx=W*.1+W*.2*i+(Math.random()-.5)*20;
+      ctx.beginPath();ctx.moveTo(lx,-20);ctx.lineTo(lx+40,H+20);ctx.stroke();
+    }
+  } else if(currentBiome==='desert'){
+    // 사막 모래 물결 — 수평선
+    ctx.strokeStyle='rgba(180,140,60,.07)';ctx.lineWidth=1;
+    for(let row=0;row<8;row++){
+      const ry=cy-R+(row/7)*R*2;
+      ctx.beginPath();ctx.moveTo(-20,ry);
+      for(let xi=0;xi<W+40;xi+=18){ctx.lineTo(xi-20,ry+Math.sin(xi*.08+row)*4);}
+      ctx.stroke();
+    }
   }
-  const bm2=BIOMES[currentBiome]||BIOMES.jungle;
-  const ev=ctx.createRadialGradient(cx,cy,R-10,cx,cy,R+30);ev.addColorStop(0,'rgba(0,0,0,0)');ev.addColorStop(1,bm2.fogCol);
-  ctx.beginPath();ctx.arc(cx,cy,R+30,0,Math.PI*2);ctx.fillStyle=ev;ctx.fill();
+
+  // ── 측면 수풀 (전방 좌우)
+  for(const t of trees){
+    // 나무 그림자
+    ctx.beginPath();ctx.ellipse(t.x+5,t.y+8,t.r*.7,t.r*.25,0,0,Math.PI*2);
+    ctx.fillStyle='rgba(0,0,0,.25)';ctx.fill();
+    // 줄기
+    ctx.beginPath();ctx.arc(t.x,t.y,t.r*.28,0,Math.PI*2);
+    ctx.fillStyle=`hsl(25,30%,14%)`;ctx.fill();
+    // 잎 (2겹)
+    ctx.beginPath();ctx.arc(t.x,t.y-t.r*.2,t.r,0,Math.PI*2);
+    ctx.fillStyle=`hsl(${t.hue},55%,${Math.floor(t.lum*100)}%)`;ctx.fill();
+    ctx.beginPath();ctx.arc(t.x-t.r*.3,t.y-t.r*.1,t.r*.65,0,Math.PI*2);
+    ctx.fillStyle=`hsl(${t.hue+10},58%,${Math.floor((t.lum+.05)*100)}%)`;ctx.fill();
+  }
+
+  // ── 측면 어두운 수풀 마스크 (나무 너머는 안 보이게)
+  const lMask=ctx.createLinearGradient(0,0,cx-R*.5,0);
+  lMask.addColorStop(0,'rgba(0,0,0,.7)');lMask.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=lMask;ctx.fillRect(-20,-20,cx-R*.5+20,H+40);
+  const rMask=ctx.createLinearGradient(W,0,cx+R*.5,0);
+  rMask.addColorStop(0,'rgba(0,0,0,.7)');rMask.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=rMask;ctx.fillRect(cx+R*.5,-20,W-cx+R*.5+20,H+40);
+
+  // ── 초소 뒤 방어선 (하단): 참호/방벽 느낌
+  const wallY=cy+R*.15;
+  // 방벽 메인
+  ctx.fillStyle='rgba(60,55,40,.5)';
+  ctx.fillRect(cx-R*.7,wallY,R*1.4,10);
+  // 방벽 위 모서리 (흉벽)
+  for(let i=0;i<7;i++){
+    const wx=cx-R*.65+i*(R*1.3/6);
+    ctx.fillStyle='rgba(70,65,45,.65)';
+    ctx.fillRect(wx,wallY-8,16,12);
+  }
+  // 방벽 그림자
+  ctx.fillStyle='rgba(0,0,0,.3)';
+  ctx.fillRect(cx-R*.7,wallY+10,R*1.4,6);
+
+  // ── 전장 바닥 격자 (수평선만, 전방감 표현)
+  ctx.strokeStyle=bm.gridCol;ctx.lineWidth=.8;
+  // 원근감 있는 수평선
+  for(let row=0;row<6;row++){
+    const fy=cy-R*0.9+row*(R*1.0/5);
+    const fw=R*0.3+row*(R*1.2/5); // 가까울수록 넓어짐
+    ctx.beginPath();ctx.moveTo(cx-fw,fy);ctx.lineTo(cx+fw,fy);ctx.stroke();
+  }
+  // 수직 원근선 (소실점 = cx, 상단)
+  const vp={x:cx,y:cy-R*1.2}; // 소실점
+  for(let col=-3;col<=3;col++){
+    const bx=cx+col*(R*.25);
+    ctx.beginPath();ctx.moveTo(vp.x+(bx-vp.x)*.05,vp.y);ctx.lineTo(bx,cy+R*.2);ctx.stroke();
+  }
 
   // 적
   for(const e of enemies){
